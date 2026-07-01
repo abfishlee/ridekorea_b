@@ -1,7 +1,14 @@
 # 🚀 반영 고도화 플랜 (비교 분석 기반)
 
 > 근거: `docs/COMPARISON_with_RideKorea.md` · 목표: Tier A 완주 + Tier B 스캐폴딩.
-> 규칙: 한 번에 하나씩 → `npm run typecheck`(exit 0) → 가능하면 로컬 Supabase 검증 → 커밋.
+> 규칙: 한 번에 하나씩 → `npm run typecheck`(exit 0) → 가능하면 로컬 Supabase 검증 → **커밋·push + 이 MD에 완료 표기**.
+
+## 📌 진행 로그
+- ✅ **A1 완료** (2026-07-01, commit `83481a7`) — `track.ts` GPS 점프 가드(`maxJumpM`/`maxJumpGapS`) + 순수 `ride-metrics.ts`(`summarizeTrack`) + `ride-metrics.test.ts` 17 assertion 통과 + 스토어 `start/recover`에 `maxJumpM=500` 배선 + `npm run test:cores` 스크립트. typecheck exit 0. (문서 커밋 `2489987`… 실제 A1 코드 `83481a7`)
+- ☐ A2 — 복구 outbox 방어검증 (다음)
+- ☐ A3 — 지도 프로바이더 인터페이스(Naver)
+- ☐ B1 — POI 출처·라이선스·물류 마이그레이션
+- ☐ B2 — feedback/report 테이블 + RPC
 
 ## 🌙 실행 순서
 1. **환경**: Docker Desktop을 **시작 메뉴에서 직접 실행**(에이전트로 켜면 OOM) → `npx supabase start` → `.env`에 anon key.
@@ -12,14 +19,10 @@
 
 ## 🟢 Tier A — 코드만(타입체크로 검증)
 
-### A1. 순수 라이드 지표 모듈 + GPS 점프 상한 + 테스트
-- **대상(신규)**: `src/features/ride/ride-metrics.ts` — 순수 함수 `summarizeTrack(points, {jumpThresholdM=1000})`:
-  거리(하버사인, jump 세그먼트 제외)·durationS·avgSpeedKmh·offRouteCount·hasEnoughTrack 반환.
-- **대상(수정)**: `src/features/ride/track.ts` — accumulator 옵션에 `maxJumpM?: number` 추가,
-  `add()`에서 직전 점 대비 거리 > maxJumpM이면 거리 미합산(점프 스파이크 방어). 기존 `maxAccuracyM/minStepM` 옆에 배치.
-- **대상(신규 테스트)**: `src/features/ride/ride-metrics.test.ts` — assert 기반(정렬/offRoute/점프무시/빈값).
-  실행: `npx tsc src/features/ride/ride-metrics.ts src/features/ride/ride-metrics.test.ts --outDir _t --rootDir src --target es2019 --module commonjs --skipLibCheck --ignoreConfig && node _t/features/ride/ride-metrics.test.js`
-- **AC**: 테스트 all pass + `npm run typecheck` exit 0. `_t/` 정리.
+### A1. 순수 라이드 지표 모듈 + GPS 점프 상한 + 테스트 ✅ (commit `83481a7`)
+- **완료**: `ride-metrics.ts`(`summarizeTrack`: 정렬·점프세그먼트 제외 거리·durationS·avgSpeedKmh·**deviatedCount**·hasEnoughTrack), `track.ts`(`maxJumpM`+`maxJumpGapS`로 짧은 간격 점프 스파이크 거부, 긴 gap은 재기준), `ride-metrics.test.ts`(17 assertion), 스토어 배선(`maxJumpM=500`), `npm run test:cores`.
+- **검증됨**: `npm run test:cores` all pass + `npm run typecheck` exit 0. `_t/`는 .gitignore.
+- 실행 커맨드: `npm run test:cores`
 
 ### A2. 복구 outbox 방어검증
 - **대상(신규)**: `src/features/ride/outbox-validate.ts` — 순수 `isValidLngLat(v)`, `sanitizePlannedLine(raw): LngLat[]`.
