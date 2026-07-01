@@ -5,8 +5,8 @@
 
 ## 📌 진행 로그
 - ✅ **A1 완료** (2026-07-01, commit `83481a7`) — `track.ts` GPS 점프 가드(`maxJumpM`/`maxJumpGapS`) + 순수 `ride-metrics.ts`(`summarizeTrack`) + `ride-metrics.test.ts` 17 assertion 통과 + 스토어 `start/recover`에 `maxJumpM=500` 배선 + `npm run test:cores` 스크립트. typecheck exit 0. (문서 커밋 `2489987`… 실제 A1 코드 `83481a7`)
-- ☐ A2 — 복구 outbox 방어검증 (다음)
-- ☐ A3 — 지도 프로바이더 인터페이스(Naver)
+- ✅ **A2 완료** (2026-07-01, commit `b6de17d`) — `outbox-validate.ts`(순수 `isValidLngLat`/`sanitizePlannedLine`/`sanitizeTrackPoints`, throw 없음) + `recover()`가 `plannedGeoJSON`·트랙포인트를 hydrate 전 sanitize → 손상 데이터로 크래시/NaN 방지. `outbox-validate.test.ts` 25 assertion. `test:cores` 두 스위트(총 42) 실행. typecheck exit 0.
+- ☐ A3 — 지도 프로바이더 인터페이스(Naver) ← 다음
 - ☐ B1 — POI 출처·라이선스·물류 마이그레이션
 - ☐ B2 — feedback/report 테이블 + RPC
 
@@ -24,10 +24,10 @@
 - **검증됨**: `npm run test:cores` all pass + `npm run typecheck` exit 0. `_t/`는 .gitignore.
 - 실행 커맨드: `npm run test:cores`
 
-### A2. 복구 outbox 방어검증
-- **대상(신규)**: `src/features/ride/outbox-validate.ts` — 순수 `isValidLngLat(v)`, `sanitizePlannedLine(raw): LngLat[]`.
-- **대상(수정)**: `src/stores/ride.ts` `recover()` — `plannedGeoJSON` 파싱과 저장 포인트 hydrate 전에 sanitize 적용(손상 데이터 → 빈/필터 처리, 크래시 없음).
-- **AC**: 일부러 깨진 좌표/비배열 주입해도 복구가 안전하게 동작. typecheck 그린.
+### A2. 복구 outbox 방어검증 ✅ (commit `b6de17d`)
+- **완료**: `outbox-validate.ts`(순수 `isValidLngLat`·`sanitizePlannedLine`·`sanitizeTrackPoints`, 절대 throw 안 함), `ride.ts` `recover()`가 `plannedGeoJSON` 파싱과 저장 포인트 hydrate 전에 sanitize 적용(손상 좌표/범위밖/비배열 → 필터 또는 빈배열).
+- **검증됨**: `outbox-validate.test.ts` 25 assertion + `npm run typecheck` exit 0. 깨진 데이터 주입에도 복구 무사고.
+- 실행 커맨드: `npm run test:cores`
 
 ### A3. 지도 프로바이더 인터페이스 (Naver 구현, Phase 1)
 - **대상(신규)**:
