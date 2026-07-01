@@ -8,8 +8,8 @@
 - ✅ **A2 완료** (2026-07-01, commit `b6de17d`) — `outbox-validate.ts`(순수 `isValidLngLat`/`sanitizePlannedLine`/`sanitizeTrackPoints`, throw 없음) + `recover()`가 `plannedGeoJSON`·트랙포인트를 hydrate 전 sanitize → 손상 데이터로 크래시/NaN 방지. `outbox-validate.test.ts` 25 assertion. `test:cores` 두 스위트(총 42) 실행. typecheck exit 0.
 - ✅ **A3 완료** (2026-07-01, commit `b748e68`) — `src/map/` 신설: `MapProvider` 인터페이스 + provider-neutral 타입 + `NaverWebViewProvider`(기존 `lib/naverMap`에 위임, 단일 지도로드 과금모델 유지) + Mapbox/Google stub + `createMapProvider`팩토리/`MAP_CONFIG`. **네이티브** `RideMap`/`RouteMap`가 Naver 직접 import → `mapProvider` 의존으로 이관(동작 불변). typecheck exit 0.
   - ⚠️ 후속: 웹 변형(`RideMap.web.tsx`/`RouteMap.web.tsx`)은 아직 Naver 웹 SDK 직접 사용(인라인 DOM 지도). 이는 별도 refactor로 이관 예정.
-- ☐ **B1 — POI 출처·라이선스·물류 마이그레이션** ← 다음 (Docker 필요, 현재 가동 중)
-- ☐ B2 — feedback/report 테이블 + RPC
+- ✅ **B1 완료** (2026-07-01, commit `7500919`) — `pois`에 출처/라이선스(`source_url`·`source_name`·`license_type`·`attribution`·`review_status` default 'approved'+check+idx) + 물류(`transport_mode`·`bike_policy(_en)`·`packing_required`·`packing_notes(_en)`·`booking_url`) 컴럼 추가. **기존 스키마 존중**: 기존 `source`/`source_ref`(unique)/`source_updated_at`/`meta` 그대로 → `external_id`/`retrieved_at` 중복 안 만듦. 로컬 적용+`schema_migrations` 기록, 시드 3행 approved, check 제약 동작, `gen:types` 재생성. typecheck exit 0.
+- ☐ **B2 — feedback/report 테이블 + RPC** ← 다음 (모더레이션 read 정책 `review_status='approved'`도 여기서)
 
 ## 🌙 실행 순서
 1. **환경**: Docker Desktop을 **시작 메뉴에서 직접 실행**(에이전트로 켜면 OOM) → `npx supabase start` → `.env`에 anon key.
@@ -40,7 +40,15 @@
 
 ## 🟡 Tier B — 스캐폴딩(Docker/Supabase 필요)
 
-### B1. POI 출처·라이선스·물류 마이그레이션
+### B1. POI 출처·라이선스·물류 마이그레이션 ✅ (commit `7500919`)
+- **실제 적용**: `supabase/migrations/20260701100000_poi_provenance_logistics.sql`. 기존 `pois`가 이미 `source`(not null)·`source_ref`(unique with source)·`source_updated_at`·`meta`(jsonb) 보유 → 계획의 `external_id`/`retrieved_at`는 중복이라 **생략**, 부족한 것만 추가.
+- **추가 컴럼**: `source_url`, `source_name`, `license_type`, `attribution`, `review_status`(default 'approved', check approved/pending/rejected, `pois_review_status_idx`), `transport_mode`, `bike_policy`, `bike_policy_en`, `packing_required`, `packing_notes`, `packing_notes_en`, `booking_url`.
+- **검증됨**: 12컬럼 생성, `schema_migrations` 기록, 시드 3행 approved, check 제약이 잘못된 값 거부, `gen:types` 재생성 + typecheck exit 0.
+- **주의**: read 정책(`USING (review_status='approved')`)은 B2로 이월(지금은 `USING (true)` 유지).
+
+<details><summary>당초 계획(참고)</summary>
+
+### B1(원계획). POI 출처·라이선스·물류 마이그레이션
 - **선행**: `\d pois`로 기존 컬럼 확인(중복 회피).
 - **대상(신규)**: `supabase/migrations/<ts>_poi_provenance_logistics.sql`
   `ALTER TABLE pois ADD COLUMN IF NOT EXISTS` — `source text, source_url text, source_name text,
@@ -49,6 +57,8 @@
   + `external_id` unique 인덱스(재동기화 upsert 키).
 - **검증**: `supabase migration up` → `npm run gen:types` → 조회 RPC/뷰에 필드 노출 확인.
 - **AC**: 마이그레이션 성공 + 타입 재생성 반영.
+
+</details>
 
 ### B2. feedback/report 테이블 + RPC (8.2 모더레이션 시작)
 - **대상(신규)**: `supabase/migrations/<ts>_moderation.sql`
