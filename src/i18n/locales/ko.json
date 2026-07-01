@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "RideKorea",
+    "continue": "계속",
+    "later": "나중에",
+    "start": "시작",
+    "save": "저장",
+    "cancel": "취소"
+  },
+  "boot": { "ready": "설정 완료 — 달려볼까요" },
+  "onboarding": {
+    "tagline": "자전거로 한국을 종단 — 먼저 달린 라이더들이 안내합니다.",
+    "continueWithGoogle": "Google로 계속",
+    "continueWithApple": "Apple로 계속",
+    "chooseLanguage": "언어 선택",
+    "appleSoon": "정식 출시 때 지원",
+    "locationPriming": "위치 권한은 라이딩을 시작할 때만 요청해요 — 여정을 기록하고 지역 혜택을 드리기 위해서예요."
+  },
+  "tabs": { "explore": "탐색", "ride": "라이딩", "diary": "기록", "wallet": "지갑" },
+  "explore": {
+    "riderStories": "라이더 이야기",
+    "official": "공식 루트",
+    "search": "루트·지역 검색…",
+    "makeItMyRoute": "내 루트로 가져오기"
+  },
+  "ride": {
+    "start": "시작",
+    "pinPhoto": "사진",
+    "offRoute": "경로 이탈 — 나만의 길을 개척 중 ✨",
+    "end": "라이딩 종료?"
+  }
+}

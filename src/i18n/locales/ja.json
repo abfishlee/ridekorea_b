@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "RideKorea",
+    "continue": "続ける",
+    "later": "あとで",
+    "start": "スタート",
+    "save": "保存",
+    "cancel": "キャンセル"
+  },
+  "boot": { "ready": "準備完了 — さあ走ろう" },
+  "onboarding": {
+    "tagline": "自転車で韓国を縦断 — 走った人たちが道案内。",
+    "continueWithGoogle": "Googleで続ける",
+    "continueWithApple": "Appleで続ける",
+    "chooseLanguage": "言語を選択",
+    "appleSoon": "リリース時に対応",
+    "locationPriming": "位置情報はライド開始時のみお尋ねします — 旅を記録し、地域の特典をお届けするためです。"
+  },
+  "tabs": { "explore": "探索", "ride": "ライド", "diary": "日記", "wallet": "ウォレット" },
+  "explore": {
+    "riderStories": "ライダーの記録",
+    "official": "公式ルート",
+    "search": "ルート・地域を検索…",
+    "makeItMyRoute": "自分のルートにする"
+  },
+  "ride": {
+    "start": "スタート",
+    "pinPhoto": "写真",
+    "offRoute": "ルートを外れた — 自分だけの道を開拓中 ✨",
+    "end": "ライドを終了？"
+  }
+}

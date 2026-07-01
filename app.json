@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "RideKorea",
+    "slug": "ridekorea",
+    "scheme": "ridekorea",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#1E3A8A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kr.oceanit.ridekorea",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ]
+      }
+    },
+    "android": {
+      "package": "kr.oceanit.ridekorea",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "RideKorea uses your location to record your journey and surprise you with local rewards.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      "expo-sqlite",
+      "expo-font",
+      "expo-status-bar",
+      "expo-splash-screen",
+      "expo-localization",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "RideKorea uses your camera to pin photos to your journey.",
+          "photosPermission": "RideKorea accesses your photos so you can add them to your journey."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

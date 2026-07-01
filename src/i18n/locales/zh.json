@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "RideKorea",
+    "continue": "继续",
+    "later": "稍后",
+    "start": "开始",
+    "save": "保存",
+    "cancel": "取消"
+  },
+  "boot": { "ready": "设置完成 — 出发吧" },
+  "onboarding": {
+    "tagline": "骑行纵贯韩国 — 由走过的骑手为你引路。",
+    "continueWithGoogle": "使用 Google 继续",
+    "continueWithApple": "使用 Apple 继续",
+    "chooseLanguage": "选择语言",
+    "appleSoon": "上线时开放",
+    "locationPriming": "我们仅在你开始骑行时请求位置权限 — 用于记录旅程并提供本地优惠。"
+  },
+  "tabs": { "explore": "探索", "ride": "骑行", "diary": "日记", "wallet": "钱包" },
+  "explore": {
+    "riderStories": "骑手故事",
+    "official": "官方路线",
+    "search": "搜索路线、地区…",
+    "makeItMyRoute": "设为我的路线"
+  },
+  "ride": {
+    "start": "开始",
+    "pinPhoto": "拍照",
+    "offRoute": "偏离路线 — 正在开辟你自己的路 ✨",
+    "end": "结束骑行？"
+  }
+}

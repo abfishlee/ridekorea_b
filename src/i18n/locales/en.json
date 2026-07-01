@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "RideKorea",
+    "continue": "Continue",
+    "later": "Later",
+    "start": "Start",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "boot": { "ready": "Setup OK — let's ride" },
+  "onboarding": {
+    "tagline": "Cross Korea by bike — guided by riders who've been there.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "chooseLanguage": "Choose your language",
+    "appleSoon": "Available at launch",
+    "locationPriming": "We'll ask for location only when you start a ride — to record your journey and surface local rewards."
+  },
+  "tabs": { "explore": "Explore", "ride": "Ride", "diary": "Diary", "wallet": "Wallet" },
+  "explore": {
+    "riderStories": "Rider Stories",
+    "official": "Official Routes",
+    "search": "Search routes, regions…",
+    "makeItMyRoute": "Make it my route"
+  },
+  "ride": {
+    "start": "Start",
+    "pinPhoto": "Photo",
+    "offRoute": "Off the path — exploring your own way ✨",
+    "end": "End ride?"
+  }
+}
