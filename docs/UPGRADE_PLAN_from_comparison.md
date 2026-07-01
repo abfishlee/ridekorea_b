@@ -6,8 +6,9 @@
 ## 📌 진행 로그
 - ✅ **A1 완료** (2026-07-01, commit `83481a7`) — `track.ts` GPS 점프 가드(`maxJumpM`/`maxJumpGapS`) + 순수 `ride-metrics.ts`(`summarizeTrack`) + `ride-metrics.test.ts` 17 assertion 통과 + 스토어 `start/recover`에 `maxJumpM=500` 배선 + `npm run test:cores` 스크립트. typecheck exit 0. (문서 커밋 `2489987`… 실제 A1 코드 `83481a7`)
 - ✅ **A2 완료** (2026-07-01, commit `b6de17d`) — `outbox-validate.ts`(순수 `isValidLngLat`/`sanitizePlannedLine`/`sanitizeTrackPoints`, throw 없음) + `recover()`가 `plannedGeoJSON`·트랙포인트를 hydrate 전 sanitize → 손상 데이터로 크래시/NaN 방지. `outbox-validate.test.ts` 25 assertion. `test:cores` 두 스위트(총 42) 실행. typecheck exit 0.
-- ☐ A3 — 지도 프로바이더 인터페이스(Naver) ← 다음
-- ☐ B1 — POI 출처·라이선스·물류 마이그레이션
+- ✅ **A3 완료** (2026-07-01, commit `b748e68`) — `src/map/` 신설: `MapProvider` 인터페이스 + provider-neutral 타입 + `NaverWebViewProvider`(기존 `lib/naverMap`에 위임, 단일 지도로드 과금모델 유지) + Mapbox/Google stub + `createMapProvider`팩토리/`MAP_CONFIG`. **네이티브** `RideMap`/`RouteMap`가 Naver 직접 import → `mapProvider` 의존으로 이관(동작 불변). typecheck exit 0.
+  - ⚠️ 후속: 웹 변형(`RideMap.web.tsx`/`RouteMap.web.tsx`)은 아직 Naver 웹 SDK 직접 사용(인라인 DOM 지도). 이는 별도 refactor로 이관 예정.
+- ☐ **B1 — POI 출처·라이선스·물류 마이그레이션** ← 다음 (Docker 필요, 현재 가동 중)
 - ☐ B2 — feedback/report 테이블 + RPC
 
 ## 🌙 실행 순서
@@ -29,14 +30,11 @@
 - **검증됨**: `outbox-validate.test.ts` 25 assertion + `npm run typecheck` exit 0. 깨진 데이터 주입에도 복구 무사고.
 - 실행 커맨드: `npm run test:cores`
 
-### A3. 지도 프로바이더 인터페이스 (Naver 구현, Phase 1)
-- **대상(신규)**:
-  - `src/map/types.ts` — `LngLat`, `RoutePath{id,coordinates,color,widthPx,dashed}`, `MapMarker`, `MapEvent`, `MapLanguage`.
-  - `src/map/MapProvider.ts` — `interface MapProvider{ id; supportsOffline; hasKoreanRoadDetail; init; setRoutes; setPosition; setMarkers; moveCamera; fitBounds; on }`.
-  - `src/map/providers/NaverWebViewProvider.ts` — **기존** `buildRideMapHtml` + `injectJavaScript` 증분갱신을 이 계약으로 래핑(재로드 없음=과금 안전 유지).
-  - `src/map/index.ts` — `createMapProvider(deps, which='naver')` 팩토리 + `MAP_CONFIG{ primary:'naver', naverClientId, secondary:'mapbox' }`.
-- **주의**: 기존 `RideMap.tsx`/`RouteMap.tsx`는 **유지**. 오늘은 인터페이스+Naver impl만. 화면 이관은 다음 단계(점진).
-- **AC**: typecheck 그린, 기존 화면 동작 불변. (Mapbox/Google은 TODO stub로 인터페이스만.)
+### A3. 지도 프로바이더 인터페이스 (Naver 구현) ✅ (commit `b748e68`)
+- **완료**: `src/map/types.ts`(provider-neutral: `LngLat`·`SpotMarker`·`StaticRouteOptions`·`RideUpdate`·`MapProviderId`·`MapLanguage`), `src/map/MapProvider.ts`(`buildStaticRouteHtml`·`buildLiveRideHtml`·`liveRideUpdateScript` + 능력플래그 `supportsOffline`·`hasKoreanRoadDetail`·`isConfigured`), `providers/NaverWebViewProvider.ts`(기존 `lib/naverMap` 위임), `providers/stubs.ts`(Mapbox/Google), `index.ts`(`createMapProvider`·`MAP_CONFIG`·`mapProvider` 싱글톤).
+- **이관**: 네이티브 `RideMap.tsx`/`RouteMap.tsx`가 `mapProvider`만 의존(Naver 직접 import 제거). 단일 지도로드 증분갱신(과금 안전) 그대로 유지.
+- **검증됨**: `npm run typecheck` exit 0, `test:cores` 42 pass, 기존 화면 동작 불변.
+- **잔여**: 웹 변형(`*.web.tsx`)은 Naver 웹 SDK 직접 사용 → 벤더 완전 격리는 별도 후속.
 
 ---
 
