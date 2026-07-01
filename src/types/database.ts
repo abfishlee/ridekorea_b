@@ -315,6 +315,110 @@ export type Database = {
         }
         Relationships: []
       }
+      published_route_spots: {
+        Row: {
+          id: string
+          location: unknown
+          memo: string | null
+          ordinal: number
+          photo_url: string | null
+          published_route_id: string
+          spot_type: Database["public"]["Enums"]["spot_type"]
+          title: string | null
+        }
+        Insert: {
+          id?: string
+          location: unknown
+          memo?: string | null
+          ordinal?: number
+          photo_url?: string | null
+          published_route_id: string
+          spot_type: Database["public"]["Enums"]["spot_type"]
+          title?: string | null
+        }
+        Update: {
+          id?: string
+          location?: unknown
+          memo?: string | null
+          ordinal?: number
+          photo_url?: string | null
+          published_route_id?: string
+          spot_type?: Database["public"]["Enums"]["spot_type"]
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_route_spots_published_route_id_fkey"
+            columns: ["published_route_id"]
+            isOneToOne: false
+            referencedRelation: "published_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      published_routes: {
+        Row: {
+          author_id: string
+          cover_photo_url: string | null
+          distance_m: number | null
+          elevation_gain_m: number | null
+          est_duration_s: number | null
+          id: string
+          planned_geom: unknown
+          published_at: string
+          route_id: string
+          summary: string | null
+          title: string
+          track_geom: unknown
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          cover_photo_url?: string | null
+          distance_m?: number | null
+          elevation_gain_m?: number | null
+          est_duration_s?: number | null
+          id?: string
+          planned_geom?: unknown
+          published_at?: string
+          route_id: string
+          summary?: string | null
+          title: string
+          track_geom?: unknown
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          cover_photo_url?: string | null
+          distance_m?: number | null
+          elevation_gain_m?: number | null
+          est_duration_s?: number | null
+          id?: string
+          planned_geom?: unknown
+          published_at?: string
+          route_id?: string
+          summary?: string | null
+          title?: string
+          track_geom?: unknown
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_routes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "published_routes_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: true
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       regions: {
         Row: {
           boundary: unknown
@@ -1187,6 +1291,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      publish_snapshot: {
+        Args: { p_route: string }
+        Returns: {
+          author_id: string
+          cover_photo_url: string | null
+          distance_m: number | null
+          elevation_gain_m: number | null
+          est_duration_s: number | null
+          id: string
+          planned_geom: unknown
+          published_at: string
+          route_id: string
+          summary: string | null
+          title: string
+          track_geom: unknown
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "published_routes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       redeem_voucher: {
         Args: { p_claim: string }
         Returns: {
@@ -1798,6 +1926,7 @@ export type Database = {
       }
       toggle_like: { Args: { p_route: string }; Returns: boolean }
       unlockrows: { Args: { "": string }; Returns: number }
+      unpublish_snapshot: { Args: { p_route: string }; Returns: boolean }
       updategeometrysrid: {
         Args: {
           catalogn_name: string
