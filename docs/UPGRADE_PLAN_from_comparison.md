@@ -80,8 +80,9 @@
 ## 🔴 Tier C — 나중(큼, 오늘 X)
 - ✅ **C2 완료** (2026-07-01, commit `6b8eb43`) — 발행본=여정 스냅샷 분리. `published_routes`+`published_route_spots`(발행 시점 동결 복사본) + `publish_snapshot`/`unpublish_snapshot` RPC(스냅샷 생성·갱신 + visibility 동기화, idempotent). RLS 공개읽기 + anon/authenticated SELECT grant. **비파괴적**: 기존 visibility feed 유지. 검증(Peter JWT+ROLLBACK): 발행(snap=1,spots=4), **여정 수정에도 스냅샷 동결**, 멱등 재발행, 해제→PRIVATE, NOT_OWNER/UNAUTHENTICATED. gen:types+typecheck exit 0.
   - ☐ C2b(후속): feed/import/social 리더를 스냅샷 테이블로 이관(현재는 visibility 기반 유지).
-- ☐ **C1 — 라우팅 엔진 어댑터** ← 다음 (`RoutingProvider` iface + GraphHopper 어댑터 골격; 자체호스팅 GraphHopper는 별도)
-- ☐ **C3 — 어드민 surface** (VoucherConfig 편집 등)
+- ✅ **C1 완료** (2026-07-01, commit `6e8f3fb`) — 라우팅 엔진 어댑터 골격. `src/features/routing/`: `RoutingProvider` 인터페이스 + provider-neutral 타입 + 순수 `createRoutingOrchestrator`(3-tier first-non-null fallback). 프로바이더: `StraightLineProvider`(작동 폴백, haversine+estimated), `GraphHopperProvider`(골격: 순수 URL빌더/응답파서 테스트됨, 네트워크는 `EXPO_PUBLIC_GRAPHHOPPER_URL` 미설정 시 null), `StoredCourseProvider`(DI lookup, 미주입 시 inert). `createRouter`+`ROUTING_CONFIG`+기본 `router`. routing.test 28 assertion(총 70). typecheck exit 0.
+  - ☐ C1b(후속): 자체호스팅 GraphHopper 컨테이너 + `StoredCourseProvider`의 Supabase lookup 실구현 → tier1/2 활성화.
+- ☐ **C3 — 어드민 surface** (VoucherConfig 편집 등) ← 다음
 
 ---
 
