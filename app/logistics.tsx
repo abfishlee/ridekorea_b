@@ -249,10 +249,11 @@ const styles = StyleSheet.create({
     padding: theme.space.md,
     marginBottom: theme.space.md,
     gap: theme.space.xs,
+    ...theme.shadows.soft,
   },
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   catBadge: {
-    backgroundColor: theme.colors.bg,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: theme.radius.pill,
     paddingHorizontal: theme.space.sm,
     paddingVertical: 2,
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.body,
     fontFamily: theme.fontFamily.regular,
     color: theme.colors.text,
-    lineHeight: 21,
+    lineHeight: 22,
     opacity: 0.9,
   },
 
