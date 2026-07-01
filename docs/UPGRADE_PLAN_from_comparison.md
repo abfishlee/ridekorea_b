@@ -82,7 +82,9 @@
   - ☐ C2b(후속): feed/import/social 리더를 스냅샷 테이블로 이관(현재는 visibility 기반 유지).
 - ✅ **C1 완료** (2026-07-01, commit `6e8f3fb`) — 라우팅 엔진 어댑터 골격. `src/features/routing/`: `RoutingProvider` 인터페이스 + provider-neutral 타입 + 순수 `createRoutingOrchestrator`(3-tier first-non-null fallback). 프로바이더: `StraightLineProvider`(작동 폴백, haversine+estimated), `GraphHopperProvider`(골격: 순수 URL빌더/응답파서 테스트됨, 네트워크는 `EXPO_PUBLIC_GRAPHHOPPER_URL` 미설정 시 null), `StoredCourseProvider`(DI lookup, 미주입 시 inert). `createRouter`+`ROUTING_CONFIG`+기본 `router`. routing.test 28 assertion(총 70). typecheck exit 0.
   - ☐ C1b(후속): 자체호스팅 GraphHopper 컨테이너 + `StoredCourseProvider`의 Supabase lookup 실구현 → tier1/2 활성화.
-- ☐ **C3 — 어드민 surface** (VoucherConfig 편집 등) ← 다음
+- ✅ **C3 완료** (2026-07-01, commit `5ae4e3e`) — 모더레이션 어드민. `admin_users` 테이블(deny-all RLS; **admin 플래그를 profiles에 안 둔 이유**=`update own profile` 정책로 인한 self-escalation 방지) + `is_admin()` definer 헬퍼. 관리자 RPC(자체 gate): `review_poi`(approved/pending/rejected), `resolve_report`(resolved/dismissed+resolved_at), `admin_list_pending_pois`/`admin_list_open_reports`(공개 RLS가 숨기는 행을 definer로 조회). B2 모더레이션 실운영화. Peter-as-admin+ROLLBACK 검증: is_admin, pending/open 큐, 승인+해결, FORBIDDEN(비관리자), INVALID_STATUS. gen:types+typecheck exit 0.
+
+🎉 **Tier C(C1·C2·C3) 전부 완료.** 비교 분석 기반 A/B/C 모든 tier 이식 완료. 남은 후속(C1b·C2b·진입점 UI)은 각 항목에 명시.
 
 ---
 
