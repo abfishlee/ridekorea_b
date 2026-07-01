@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test:cores": "tsc src/features/ride/ride-metrics.ts src/features/ride/ride-metrics.test.ts src/features/ride/deviation.ts --outDir _t --rootDir src --target es2019 --module commonjs --skipLibCheck --ignoreConfig && node _t/features/ride/ride-metrics.test.js",
+    "test:cores": "tsc src/features/ride/ride-metrics.ts src/features/ride/ride-metrics.test.ts src/features/ride/outbox-validate.ts src/features/ride/outbox-validate.test.ts src/features/ride/track.ts src/features/ride/deviation.ts --outDir _t --rootDir src --target es2019 --module commonjs --skipLibCheck --ignoreConfig && node _t/features/ride/ride-metrics.test.js && node _t/features/ride/outbox-validate.test.js",
     "db:reset": "supabase db reset",
     "gen:types": "supabase gen types typescript --local > src/types/database.ts"
   },

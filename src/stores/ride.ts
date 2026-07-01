@@ -27,6 +27,7 @@ import {
   type RawFix,
 } from "../features/ride/track";
 import * as outbox from "../features/ride/outbox";
+import { sanitizePlannedLine, sanitizeTrackPoints } from "../features/ride/outbox-validate";
 import { ensureForegroundLocation } from "../lib/permissions";
 
 export type RideStatus = "idle" | "starting" | "tracking" | "paused" | "finishing";
@@ -230,18 +231,12 @@ export const useRide = create<RideState>((set, get) => {
       }
       if (!active) return false;
 
-      let plannedLine: LngLat[] = [];
-      if (active.plannedGeoJSON) {
-        try {
-          const parsed = JSON.parse(active.plannedGeoJSON) as { coordinates?: LngLat[] };
-          plannedLine = parsed.coordinates ?? [];
-        } catch {
-          plannedLine = [];
-        }
-      }
+      // Defensively sanitize persisted data — a corrupt planned line or track row
+      // must never crash recovery or feed NaN into the deviation math.
+      const plannedLine = sanitizePlannedLine(active.plannedGeoJSON);
 
       const acc = createTrackAccumulator(plannedLine, { maxAccuracyM: 50, minStepM: 3, maxJumpM: 500 });
-      const saved = await outbox.getRidePoints(active.rideId);
+      const saved = sanitizeTrackPoints(await outbox.getRidePoints(active.rideId));
       acc.hydrate(saved);
       accumulator = acc;
 
