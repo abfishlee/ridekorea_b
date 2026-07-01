@@ -147,6 +147,7 @@ export const useRide = create<RideState>((set, get) => {
         accumulator = createTrackAccumulator(route.plannedLine, {
           maxAccuracyM: 50,
           minStepM: 3,
+          maxJumpM: 500,
         });
 
         // Outbox is best-effort: on platforms without SQLite (e.g. web) tracking
@@ -239,7 +240,7 @@ export const useRide = create<RideState>((set, get) => {
         }
       }
 
-      const acc = createTrackAccumulator(plannedLine, { maxAccuracyM: 50, minStepM: 3 });
+      const acc = createTrackAccumulator(plannedLine, { maxAccuracyM: 50, minStepM: 3, maxJumpM: 500 });
       const saved = await outbox.getRidePoints(active.rideId);
       acc.hydrate(saved);
       accumulator = acc;

@@ -71,6 +71,12 @@ export interface AccumulatorOptions {
   maxAccuracyM?: number;
   /** Ignore fixes that moved less than this from the last point (meters). Default 0. */
   minStepM?: number;
+  /** Reject teleport spikes: a jump larger than this (meters). Default: no limit. */
+  maxJumpM?: number;
+  /** ...but accept a large jump when the time gap exceeds this (seconds) — signal
+   *  regained after a tunnel/dropout — so tracking re-anchors instead of getting
+   *  stuck at a stale point. Default 30. */
+  maxJumpGapS?: number;
 }
 
 export interface TrackAccumulator {
@@ -92,6 +98,8 @@ export function createTrackAccumulator(
 ): TrackAccumulator {
   const maxAccuracyM = opts.maxAccuracyM ?? Infinity;
   const minStepM = opts.minStepM ?? 0;
+  const maxJumpM = opts.maxJumpM ?? Infinity;
+  const maxJumpGapS = opts.maxJumpGapS ?? 30;
 
   let detector = createDeviationDetector(plannedLine, {
     enterM: opts.enterM,
@@ -133,6 +141,13 @@ export function createTrackAccumulator(
       let stepDist = 0;
       if (last) {
         stepDist = haversine([last.lng, last.lat], here);
+        // Reject teleport spikes: an implausibly large jump over a short interval
+        // is almost always a bad fix. A large jump after a long gap (signal
+        // regained) is allowed so tracking re-anchors instead of getting stuck.
+        const gapS = (fix.t - last.t) / 1000;
+        if (stepDist > maxJumpM && gapS >= 0 && gapS < maxJumpGapS) {
+          return { point: null, stats: computeStats(), deviationChanged: false, accepted: false };
+        }
         if (stepDist < minStepM) {
           return { point: null, stats: computeStats(), deviationChanged: false, accepted: false };
         }
