@@ -3,7 +3,7 @@
 > 너(사용자)와 나(Claude)가 **한 작업씩** 진행하는 살아있는 트래커. 매 작업 후 상태와 진행률을 갱신한다.
 > 상태 표기: ✅ 완료 · ◐ 진행/부분 · ☐ 대기
 
-## 📊 진행률 요약 (Overall ≈ 79%)
+## 📊 진행률 요약 (Overall ≈ 82%)
 
 | Phase | 내용 | 상태 | 진행률 |
 |---|---|---|---|
@@ -12,18 +12,19 @@
 | 2 | 모바일 앱 스켈레톤 | ✅ | 100% |
 | 3 | Explore & Route Detail | ✅ | 100% |
 | 4 | Ride 코어(추적·이탈·사진핀) | ✅ | 100% |
-| 5 | 지오펜싱 & 바우처 | ◐ | 67% |
-| 6 | Diary & 소셜 | ◐ | 50% |
+| 5 | 지오펜싱 & 바우처 | ✅ | 100% |
+| 6 | Diary & 소셜 | ✅ | 100% |
 | 7 | 스탬프·물류·ETL | ◐ | 33% |
 | 8 | 하드닝 & 출시 준비 | ◐ | 25% |
 
-**완료 작업: 26 / 33** → **약 79%**
+**완료 작업: 27 / 33** → **약 82%**
 
 > 🟢 **로컬 Supabase 스택 구동·검증 완료** (Docker): 마이그레이션 2종 + seed 적용, 데이터 확인(routes 2·spots 4·vouchers 2·regions 1·인증센터 3·pois 3·profiles 1).
 > 🟢 **피드 쿼리 end-to-end 검증** (3.1): anon/authenticated GRANT 추가 + 임베드 FK 명시 후 실 데이터 조회 성공.
 > 🟢 **핵심 플로우 RPC 검증** (3.2, 인증 JWT): `import_route`→PRIVATE/DRAFT 복제 생성, `toggle_like`→♥ 증가(트리거 작동) 확인.
 > 🟢 **라이딩 종료 RPC 검증** (4.5, 피터 권한): 공식루트 import→`finalize_ride`(합성 track/deviated GeoJSON)→**FINISHED + track/deviated 지오메트리 저장 + 거리 4511.7m 서버계산 + 프로필 누적거리 갱신** 확인(트랜잭션 ROLLBACK으로 시드 무손).
 > 🟢 **특정 루트 라이딩 플로우 완성** (4.1): 루트 상세 → 계획 경로 전달 → 이탈 감지(파랑→분홍) → 종료 시 `finalize_ride` 저장까지 UI 연결. 구성 RPC 3종(`import_route`·`route_path_geojson`·`finalize_ride`) 개별 검증 완료. 통합 DB 재검증은 Docker 기동 시 1회 확인 예정.
+> 🟢 **Wallet·Diary·댓글 화면 완성** (5.2/5.3/6.1/6.3): VoucherCard(스프링 등장·리덴), Wallet 리스트(빈/새로고침), Diary 내 여정(상태·공개 배지·발행 토글·Ride 진입), 루트 상세 댓글(작성·삭제, 트리거 카운트). 전부 기존 검증된 RPC/쿼리에 UI 연결, 타입체크 통과.
 > 🟢 **사진핀 RPC 검증** (4.4, 피터 권한): `add_ride_spot`→소유 루트에 Point(SRID4326)·photo_url·spot_type 스팟 생성 확인. Storage 버킷 `ride-photos`(공개읽기+소유자 쓰기) 생성 확인.
 > 🟢 **지오펜싱/바우처 RPC 검증** (5.1, 피터 권한): `nearby_regions_geojson`→부여 근처 1건(MultiPolygon)·반경 밖 0건. `claim_voucher`→발급(ISSUED)·재고 차감·중복(ALREADY_CLAIMED)·지역밖(OUTSIDE_REGION) 차단 확인.
 > 🟢 **스탬프 RPC 검증** (7.1, 피터 권한): `certification_centers_geojson`→3곳. `award_stamp`→100m 근접 발급·재발급 멱등·150m 밖(TOO_FAR) 차단 확인. `buildPassport` 순수 8/8.
@@ -72,15 +73,15 @@
 - ✅ 4.4 사진핀 캡처 + 업로드 파이프라인 — **캡처 UI 완성**: `expo-image-picker`로 카메라→`queueRidePhoto`(Ride 화면 📷 버튼). 백엔드(Storage 버킷 + `add_ride_spot` + 업로드/동기화)는 이미 검증 완료. app.json 권한 플러그인 추가.
 - ✅ 4.5 라이딩 종료 → finalize-ride — `src/features/ride/api.ts`(`submitFinalizeRide`/`finalizeAndClear`/`useFinalizeRide`: stop 페이로드→`finalize_ride` RPC→성공 시 아웃박스 정리, 실패 시 보존). **로컬 DB end-to-end 검증 완료**(FINISHED·지오메트리·거리·프로필 누적).
 
-## Phase 5 — Geofencing & Vouchers ◐
+## Phase 5 — Geofencing & Vouchers ✅ (100%)
 - ✅ 5.1 지역 지오펜싱(주변 region 캐시 + ENTER 감지) — `src/features/geofence/geofence.ts`(순수: 레이캐스팅 점-인-폴리곤 + 홀 + MultiPolygon + ENTER/EXIT 전환 + 디바운스, **합성 13/13 검증**), `supabase/migrations/20260630170000_regions_geojson.sql`(`nearby_regions_geojson` RPC), `src/features/geofence/api.ts`(`fetchNearbyRegions`→GeofenceRegion[], `claimVoucher`/`useClaimVoucher`). **로컬 DB 검증 완료**.
-- ◐ 5.2 claim-voucher 연동 + VoucherCard(스프링 등장) — `claim_voucher` API/RPC **검증 완료**(발급·중복·지역밖). VoucherCard UI는 대기.
-- ◐ 5.3 Wallet(바우처/상태) — **백엔드 완료**: `src/features/wallet/api.ts`(`fetchMyClaims`+임베드, `useRedeemVoucher`). `redeem_voucher` 로컬 DB 검증. Wallet 화면 UI는 대기.
+- ✅ 5.2 claim-voucher 연동 + VoucherCard(스프링 등장) — `claim_voucher` API/RPC **검증 완료**(발급·중복·지역밖). **VoucherCard UI 완성**: `src/features/wallet/VoucherCard.tsx`(티켓형 카드, RN `Animated.spring` 스타거 등장, 할인·파트너·지역·상태 배지·리덴 버튼).
+- ✅ 5.3 Wallet(바우처/상태) — **백엔드 + 화면 완성**: `src/features/wallet/api.ts`(`fetchMyClaims`+임베드, `useRedeemVoucher`), `app/(tabs)/wallet.tsx`(VoucherCard 리스트 + 리덴 확인 + 빈 상태 + 당겨서 새로고침). `redeem_voucher` 로컬 DB 검증. 타입체크 통과.
 
-## Phase 6 — Diary & Social ◐
-- ☐ 6.1 Diary 타임라인 + My Journeys
+## Phase 6 — Diary & Social ✅ (100%)
+- ✅ 6.1 Diary 타임라인 + My Journeys — `src/features/diary/api.ts`(`useMyJourneys`: author_id=나 루트, 최신순), `app/(tabs)/diary.tsx`(커버·거리·시간·상태/공개 배지 카드 + 상세 이동 + **Ride 직행** + **FINISHED 발행 토글**(`usePublishRoute`) + 빈 상태). 가져온 루트를 재-import 없이 여는 진입점.
 - ✅ 6.2 Publish(PRIVATE→PUBLIC) — `supabase/migrations/20260630190000_social.sql`(`publish_route` RPC, 소유자 체크), `src/features/route/social.ts`(`usePublishRoute`). **로컬 DB 검증**(전환·NOT_OWNER). 여행기 발행=콜드스타트 해소 핵심.
-- ◐ 6.3 좋아요/댓글 — `toggle_like`(3.2 완료) + **댓글 백엔드 완료**: `add_comment` RPC + `useComments`/`useAddComment`/`useDeleteComment`(`social.ts`). 로컬 DB 검증(트리거·INVALID_BODY). 댓글 UI는 상세화면에 추가 대기.
+- ✅ 6.3 좋아요/댓글 — `toggle_like`(3.2 완료) + **댓글 백엔드 완료**: `add_comment` RPC + `useComments`/`useAddComment`/`useDeleteComment`(`social.ts`). 로컬 DB 검증(트리거·INVALID_BODY). **댓글 UI 완성**: `app/route/[id].tsx`에 댓글 섹션(목록 + 입력/전송 + 내 댓글 삭제, 국기 아바타).
 
 ## Phase 7 — Stamps · Logistics · ETL ◐
 - ✅ 7.1 스탬프 패스포트 + award-stamp — `supabase/migrations/20260630180000_cert_centers.sql`(`certification_centers_geojson` RPC), `src/features/stamps/passport.ts`(순수 `buildPassport`: 센터×스탬프 조인 + 강별 진행률, **8/8 검증**), `src/features/stamps/api.ts`(센터 목록·내 스탬프·`awardStamp`/`useAwardStamp`). **로컬 DB 검증**(근접 발급·멱등·TOO_FAR).
@@ -96,9 +97,9 @@
 ---
 
 ## 🎯 현재 포커스
-- **방금 완료**: ✅ **Phase 4 완성(100%)** — "특정 루트 라이딩" 플로우 연결(루트 상세 → 계획 경로 전달 → 이탈 감지 파랑→분홍 → 종료 시 `finalize_ride` 서버 저장). `app/(tabs)/ride.tsx` + `app/route/[id].tsx` 수정, 타입체크 통과(exit=0). *(구성 RPC 3종 개별 검증 완료; 통합 DB 재검증은 Docker 기동 시 1회 확인 예정)*
+- **방금 완료**: ✅ **화면 3종 완성** — 5.2/5.3 Wallet(VoucherCard 스프링 등장 + 리덴), 6.1 Diary(내 여정 + 발행 토글), 6.3 댓글 UI(상세화면 작성/삭제). **Phase 5·6 모두 100% 도달.** 타입체크 통과(exit=0).
 - **📦 너의 EAS 빌드 단계(준비되면)**: `npm i -g eas-cli` → `eas login` → `eas init`(projectId 생성) → `eas build -p android --profile development` → APK 설치 → `npx expo start --dev-client`. 지도는 기존 웹 Dynamic Map 키 그대로 사용(네이티브 SDK 키 불필요, localhost 허용만).
-- **다음 → ① 웹 Ride 화면 미리보기**(브라우저에서 Ride 화면 시각 확인 + `RideMap.web` 실지도화) — *Docker + Metro 기동 필요*. 이후 **5.2 VoucherCard UI → 5.3 Wallet UI → 6.1 Diary(내 여정)** 순.
+- **다음 → ① 웹 미리보기**(브라우저에서 Explore·Ride·Wallet·Diary·상세 시각 확인 + `RideMap.web` 실지도화) — *Docker + Metro 기동 필요*. 이후 **7.2 물류 가이드 → 8.1 다국어 완성 → 8.2 모더레이션** 순.
 - **📌 백로그(나중 폴리시)**:
   - 스팟 마커 디자인 — **사진 있으면 원형 사진 마커**(돋보기 스타일), **글만 있으면 이모지**. (`route_spots_geojson`에 photo_url 추가 + 마커 content를 원형 이미지로)
   - 지도 마커 **밀집 구간 클러스터링** — 줌아웃·밀집 시 근접 마커를 하나로 묶어 개수 배지 표시, 줌인·탭 시 해제. (네이버 지도 MarkerClustering 라이브러리 또는 자체 그리드 클러스터링)

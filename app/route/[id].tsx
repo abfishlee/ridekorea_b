@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -23,6 +24,12 @@ import {
   SpotType,
 } from "../../src/features/route/api";
 import { formatDistance, formatDuration, flagEmoji } from "../../src/features/explore/api";
+import {
+  useComments,
+  useAddComment,
+  useDeleteComment,
+  RouteComment,
+} from "../../src/features/route/social";
 import { RouteMap } from "../../src/features/route/RouteMap";
 import { useAuth } from "../../src/stores/auth";
 import theme from "../../src/theme/theme";
@@ -50,6 +57,35 @@ export default function RouteDetailScreen() {
   const { data: path } = useRoutePath(id);
   const { data: spots } = useRouteSpots(id);
   const [liked, setLiked] = useState(false);
+
+  const comments = useComments(id);
+  const addComment = useAddComment(id);
+  const deleteComment = useDeleteComment(id);
+  const [commentText, setCommentText] = useState("");
+
+  const onAddComment = () => {
+    const body = commentText.trim();
+    if (!body) return;
+    addComment.mutate(body, {
+      onSuccess: () => setCommentText(""),
+      onError: (e) =>
+        Alert.alert("Couldn't post comment", e instanceof Error ? e.message : String(e)),
+    });
+  };
+
+  const onDeleteComment = (commentId: string) => {
+    Alert.alert("Delete comment?", "This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () =>
+          deleteComment.mutate(commentId, {
+            onError: (e) => Alert.alert("Error", e instanceof Error ? e.message : String(e)),
+          }),
+      },
+    ]);
+  };
 
   const onImport = () => {
     importRoute.mutate(id, {
@@ -157,6 +193,50 @@ export default function RouteDetailScreen() {
               ))}
             </View>
           ) : null}
+
+          {/* Comments */}
+          <View style={styles.comments}>
+            <Text style={styles.sectionTitle}>
+              Comments{route.comments_count ? ` (${route.comments_count})` : ""}
+            </Text>
+
+            {(comments.data ?? []).map((c) => (
+              <CommentRow
+                key={c.id}
+                comment={c}
+                mine={!!session && c.author?.id === session.user.id}
+                onDelete={() => onDeleteComment(c.id)}
+              />
+            ))}
+            {comments.data && comments.data.length === 0 ? (
+              <Text style={styles.noComments}>Be the first to leave a note.</Text>
+            ) : null}
+
+            <View style={styles.commentInputRow}>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Add a comment…"
+                placeholderTextColor={theme.colors.textMuted}
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+              />
+              <Pressable
+                style={[
+                  styles.sendBtn,
+                  (!commentText.trim() || addComment.isPending) && styles.sendBtnOff,
+                ]}
+                onPress={onAddComment}
+                disabled={!commentText.trim() || addComment.isPending}
+              >
+                {addComment.isPending ? (
+                  <ActivityIndicator size="small" color={theme.colors.textOnPrimary} />
+                ) : (
+                  <Ionicons name="send" size={16} color={theme.colors.textOnPrimary} />
+                )}
+              </Pressable>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -226,6 +306,48 @@ function TimelineRow({ spot, last }: { spot: RouteSpot; last: boolean }) {
   );
 }
 
+function CommentRow({
+  comment,
+  mine,
+  onDelete,
+}: {
+  comment: RouteComment;
+  mine: boolean;
+  onDelete: () => void;
+}) {
+  const flag = flagEmoji(comment.author?.nationality ?? null);
+  return (
+    <View style={styles.commentRow}>
+      <View style={styles.commentAvatar}>
+        {comment.author?.profile_image_url ? (
+          <Image
+            source={{ uri: comment.author.profile_image_url }}
+            style={styles.commentAvatarImg}
+          />
+        ) : (
+          <Text style={styles.commentAvatarText}>{flag || "\ud83d\udeb2"}</Text>
+        )}
+      </View>
+      <View style={styles.commentContent}>
+        <View style={styles.commentHead}>
+          <Text style={styles.commentAuthor} numberOfLines={1}>
+            {comment.author?.display_name ?? "Rider"}
+          </Text>
+          <Text style={styles.commentDate}>
+            {new Date(comment.created_at).toLocaleDateString()}
+          </Text>
+        </View>
+        <Text style={styles.commentBody}>{comment.body}</Text>
+      </View>
+      {mine ? (
+        <Pressable onPress={onDelete} hitSlop={8} style={styles.commentDelete}>
+          <Ionicons name="trash-outline" size={16} color={theme.colors.textMuted} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.bg },
   fill: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.colors.bg, gap: theme.space.sm },
@@ -278,6 +400,52 @@ const styles = StyleSheet.create({
     marginBottom: theme.space.sm,
   },
   ctaText: { fontSize: theme.fontSize.label, fontFamily: theme.fontFamily.bold, color: theme.colors.textOnPrimary },
+
+  comments: { marginTop: theme.space.lg },
+  noComments: {
+    fontSize: theme.fontSize.body,
+    fontFamily: theme.fontFamily.regular,
+    color: theme.colors.textMuted,
+    marginBottom: theme.space.md,
+  },
+  commentRow: { flexDirection: "row", gap: theme.space.sm, marginBottom: theme.space.md, alignItems: "flex-start" },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.bg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  commentAvatarImg: { width: 32, height: 32 },
+  commentAvatarText: { fontSize: 16 },
+  commentContent: { flex: 1, gap: 2 },
+  commentHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.space.sm },
+  commentAuthor: { flex: 1, fontSize: theme.fontSize.body, fontFamily: theme.fontFamily.semibold, color: theme.colors.text },
+  commentDate: { fontSize: theme.fontSize.caption, fontFamily: theme.fontFamily.regular, color: theme.colors.textMuted },
+  commentBody: { fontSize: theme.fontSize.body, fontFamily: theme.fontFamily.regular, color: theme.colors.text, lineHeight: 20 },
+  commentDelete: { paddingTop: 2 },
+  commentInputRow: { flexDirection: "row", alignItems: "flex-end", gap: theme.space.sm, marginTop: theme.space.sm },
+  commentInput: {
+    flex: 1,
+    minHeight: 44,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.space.md,
+    paddingTop: theme.space.sm,
+    paddingBottom: theme.space.sm,
+    fontSize: theme.fontSize.body,
+    fontFamily: theme.fontFamily.regular,
+    color: theme.colors.text,
+  },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.primary, alignItems: "center", justifyContent: "center" },
+  sendBtnOff: { opacity: 0.5 },
 });
 
 function shadow() {
