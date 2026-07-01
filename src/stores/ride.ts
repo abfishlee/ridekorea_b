@@ -106,6 +106,7 @@ export const useRide = create<RideState>((set, get) => {
   async function attachWatcher() {
     // Detach any prior watcher first to avoid duplicates.
     subscription?.remove();
+    try {
     subscription = await Location.watchPositionAsync(WATCH_OPTIONS, (loc) => {
       const acc = accumulator;
       if (!acc) return;
@@ -124,6 +125,11 @@ export const useRide = create<RideState>((set, get) => {
         trackVersion: s.trackVersion + 1,
       }));
     });
+    } catch {
+      // Web (insecure origin) or GPS unavailable: keep tracking in-memory so the
+      // dashboard stays usable in preview; live position simply won't update.
+      subscription = null;
+    }
   }
 
   return {
