@@ -161,5 +161,22 @@
       "TRANSPORT": "Transport",
       "CERT_CENTER": "Certification center"
     }
+  },
+  "logistics": {
+    "title": "Logistics guide",
+    "subtitle": "Getting you and your bike across Korea.",
+    "all": "All",
+    "empty": "No tips here yet.",
+    "loadError": "Couldn't load tips.",
+    "voteError": "Couldn't save your vote",
+    "signInTitle": "Sign in required",
+    "signInBody": "Log in to upvote helpful tips.",
+    "categories": {
+      "AIRPORT": "Airport",
+      "TRAIN": "Train",
+      "SUBWAY": "Subway",
+      "RENTAL": "Rental",
+      "GENERAL": "General"
+    }
   }
 }

@@ -221,3 +221,34 @@ where not exists (
   select 1 from public.spots s
   where s.route_id = v.route_id and s.title = v.title
 );
+
+-- ============================================================
+-- Logistics guide board (Phase 7.2) — curated tips (author_id null).
+-- Idempotent: guarded by title match.
+-- Categories: AIRPORT | TRAIN | SUBWAY | RENTAL | GENERAL
+-- ============================================================
+insert into public.logistics_tips (author_id, category, title, body, region)
+select null, v.category, v.title, v.body, v.region
+from (values
+  ('AIRPORT', 'Bikes at Incheon Airport (ICN)',
+   'You can roll a boxed or bagged bike through departures. Airport limousine buses carry bagged bikes in the luggage hold; the AREX airport train allows folded or bagged bikes during off-peak hours. Reassemble at the arrivals plaza before heading to the Ara Canal path.',
+   'Incheon'),
+  ('TRAIN', 'Taking your bike on the KTX',
+   'KTX high-speed trains have no dedicated bike racks, so bring a bike bag (rinko-style) and fully cover the bike, then stow it in the luggage area at the ends of the car. ITX-Cheongchun and some Mugunghwa trains have proper bike spaces you can reserve.',
+   'Nationwide'),
+  ('SUBWAY', 'Bikes on the Seoul subway',
+   'Full-size bikes are allowed only on weekends and public holidays, normally in the first or last car. Folding bikes are welcome any day if folded and bagged. Use elevators, and avoid rush hour even on allowed days.',
+   'Seoul'),
+  ('RENTAL', 'Renting a touring bike',
+   'Shops near the Four Rivers path (Seoul, Yangpyeong, Busan and more) rent hybrids and touring bikes by the day. Book ahead in spring and autumn peak season, and bring your passport for the deposit.',
+   'Nationwide'),
+  ('GENERAL', 'Certification passport and red booths',
+   'Buy the Four Rivers passport at any certification center or online, then self-stamp at the red phone-booth kiosks spaced along the path. Collect every stamp to earn the grand-slam medal at the end.',
+   'Nationwide'),
+  ('GENERAL', 'Where to sleep along the path',
+   'Look for motels in towns for cheap, clean, private rooms, and free riverside campsites near certification centers. Convenience stores are everywhere for water, snacks and quick hot meals.',
+   'Nationwide')
+) as v(category, title, body, region)
+where not exists (
+  select 1 from public.logistics_tips t where t.title = v.title
+);

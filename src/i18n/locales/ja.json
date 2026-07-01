@@ -161,5 +161,22 @@
       "TRANSPORT": "交通",
       "CERT_CENTER": "認証センター"
     }
+  },
+  "logistics": {
+    "title": "輸送ガイド",
+    "subtitle": "あなたと自転車の韓国内移動をサポート。",
+    "all": "すべて",
+    "empty": "まだヒントがありません。",
+    "loadError": "ヒントを読み込めませんでした。",
+    "voteError": "投票を保存できませんでした",
+    "signInTitle": "ログインが必要です",
+    "signInBody": "役立つヒントに投票するにはログインしてください。",
+    "categories": {
+      "AIRPORT": "空港",
+      "TRAIN": "電車",
+      "SUBWAY": "地下鉄",
+      "RENTAL": "レンタル",
+      "GENERAL": "一般"
+    }
   }
 }

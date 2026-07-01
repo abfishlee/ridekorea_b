@@ -153,6 +153,39 @@ export type Database = {
           },
         ]
       }
+      logistics_tip_votes: {
+        Row: {
+          created_at: string
+          tip_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          tip_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          tip_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logistics_tip_votes_tip_id_fkey"
+            columns: ["tip_id"]
+            isOneToOne: false
+            referencedRelation: "logistics_tips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "logistics_tip_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logistics_tips: {
         Row: {
           author_id: string | null
@@ -2055,6 +2088,7 @@ export type Database = {
         Returns: unknown
       }
       toggle_like: { Args: { p_route: string }; Returns: boolean }
+      toggle_tip_upvote: { Args: { p_tip: string }; Returns: boolean }
       unlockrows: { Args: { "": string }; Returns: number }
       unpublish_snapshot: { Args: { p_route: string }; Returns: boolean }
       updategeometrysrid: {

@@ -161,5 +161,22 @@
       "TRANSPORT": "交通",
       "CERT_CENTER": "认证中心"
     }
+  },
+  "logistics": {
+    "title": "出行指南",
+    "subtitle": "帮你和自行车走遍韩国。",
+    "all": "全部",
+    "empty": "这里还没有贴士。",
+    "loadError": "无法加载贴士。",
+    "voteError": "无法保存你的点赞",
+    "signInTitle": "需要登录",
+    "signInBody": "登录后即可为有用的贴士点赞。",
+    "categories": {
+      "AIRPORT": "机场",
+      "TRAIN": "火车",
+      "SUBWAY": "地铁",
+      "RENTAL": "租赁",
+      "GENERAL": "通用"
+    }
   }
 }

@@ -28,9 +28,14 @@ export default function Explore() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.brand}>{t("common.appName")}</Text>
-        <Pressable onPress={() => signOut()} hitSlop={12}>
-          <Ionicons name="log-out-outline" size={22} color={theme.colors.textMuted} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={() => router.push("/logistics")} hitSlop={12}>
+            <Ionicons name="book-outline" size={22} color={theme.colors.textMuted} />
+          </Pressable>
+          <Pressable onPress={() => signOut()} hitSlop={12}>
+            <Ionicons name="log-out-outline" size={22} color={theme.colors.textMuted} />
+          </Pressable>
+        </View>
       </View>
 
       {/* Segmented toggle: Rider Stories / Official */}
@@ -115,6 +120,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fontFamily.bold,
     color: theme.colors.primary,
   },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: theme.space.lg },
   segment: {
     flexDirection: "row",
     gap: theme.space.sm,

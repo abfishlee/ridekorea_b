@@ -161,5 +161,22 @@
       "TRANSPORT": "교통",
       "CERT_CENTER": "인증센터"
     }
+  },
+  "logistics": {
+    "title": "물류 가이드",
+    "subtitle": "당신과 자전거의 한국 이동을 도와드려요.",
+    "all": "전체",
+    "empty": "아직 팁이 없어요.",
+    "loadError": "팁을 불러오지 못했어요.",
+    "voteError": "추천을 저장하지 못했어요",
+    "signInTitle": "로그인이 필요해요",
+    "signInBody": "도움이 된 팁에 추천하려면 로그인하세요.",
+    "categories": {
+      "AIRPORT": "공항",
+      "TRAIN": "기차",
+      "SUBWAY": "지하철",
+      "RENTAL": "대여",
+      "GENERAL": "일반"
+    }
   }
 }
