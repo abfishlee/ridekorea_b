@@ -34,6 +34,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certification_centers: {
         Row: {
           corridor: string | null
@@ -995,6 +1018,59 @@ export type Database = {
             }
             Returns: string
           }
+      admin_list_open_reports: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          reason: string | null
+          reporter_id: string | null
+          resolved_at: string | null
+          status: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "reports"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_list_pending_pois: {
+        Args: never
+        Returns: {
+          attribution: string | null
+          bike_policy: string | null
+          bike_policy_en: string | null
+          booking_url: string | null
+          caution_count: number
+          id: string
+          license_type: string | null
+          location: unknown
+          meta: Json | null
+          name: string | null
+          name_en: string | null
+          packing_notes: string | null
+          packing_notes_en: string | null
+          packing_required: boolean | null
+          poi_type: Database["public"]["Enums"]["poi_type"]
+          recommend_count: number
+          review_status: string
+          source: string
+          source_name: string | null
+          source_ref: string | null
+          source_updated_at: string | null
+          source_url: string | null
+          transport_mode: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "pois"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       award_stamp: {
         Args: { p_center: string; p_lat: number; p_lng: number }
         Returns: {
@@ -1215,6 +1291,7 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       import_route: { Args: { p_source: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_regions_geojson: {
         Args: { p_lat: number; p_lng: number; p_radius_m?: number }
@@ -1329,6 +1406,59 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "voucher_claims"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      resolve_report: {
+        Args: { p_report: string; p_status: string }
+        Returns: {
+          created_at: string
+          id: string
+          reason: string | null
+          reporter_id: string | null
+          resolved_at: string | null
+          status: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_poi: {
+        Args: { p_poi: string; p_status: string }
+        Returns: {
+          attribution: string | null
+          bike_policy: string | null
+          bike_policy_en: string | null
+          booking_url: string | null
+          caution_count: number
+          id: string
+          license_type: string | null
+          location: unknown
+          meta: Json | null
+          name: string | null
+          name_en: string | null
+          packing_notes: string | null
+          packing_notes_en: string | null
+          packing_required: boolean | null
+          poi_type: Database["public"]["Enums"]["poi_type"]
+          recommend_count: number
+          review_status: string
+          source: string
+          source_name: string | null
+          source_ref: string | null
+          source_updated_at: string | null
+          source_url: string | null
+          transport_mode: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pois"
           isOneToOne: true
           isSetofReturn: false
         }
