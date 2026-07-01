@@ -1,7 +1,7 @@
 # 🧭 RideKorea_b — AI 인수인계(Handoff) 문서
 
 > **이 문서 하나만 읽으면 다른 AI(또는 다른 PC의 나)가 프로젝트를 이해하고 곧바로 이어서 작업할 수 있도록** 정리한 핸드오프 노트입니다.
-> 최종 업데이트: 2026-07-01 · 상태: 로컬 개발 환경 구동 확인, 전체 진행률 **≈82%**
+> 최종 업데이트: 2026-07-01 · 상태: 로컬 개발 환경 구동 확인, 전체 진행률 **≈85%**
 
 ---
 
@@ -11,7 +11,7 @@
 - **핵심 컨셉(사사키 시나리오)**: 남이 만든 루트를 "내 루트로 가져와" 라이딩하고, **경로를 벗어나면(이탈) 파란 선이 분홍 선("나만의 길")으로** 바뀌며 자기만의 여행기가 된다. 지역 진입 시 **바우처**, 인증센터에서 **스탬프**, 사진 **핀**으로 여정을 기록.
 - **스택**: Expo SDK 56 / React Native 0.85 / expo-router / **Supabase(로컬, Docker)** / zustand / TanStack Query / i18next(ko·en·ja·zh) / 지도는 **네이버 지도 WebView**(비용 최소화).
 - **지금 상태**: 백엔드(RPC·RLS) 대부분 완성 + 로컬 DB 검증 완료. 프론트 Explore/Detail/Ride 완성, **Phase 5·6 화면 완성(100%)** — Wallet(바우처·리덴), Diary(내 여정·발행), 루트 상세 댓글까지 동작.
-- **다음 할 일**: ① 웹 미리보기(브라우저에서 전 화면 시각 확인) + `RideMap.web` 실지도화. 이후 7.2 물류 가이드 / 8.1 다국어 완성. (§7 참고)
+- **다음 할 일**: ① 웹 미리보기(브라우저에서 전 화면 시각 확인 + 언어 전환 QA) + `RideMap.web` 실지도화. 이후 7.2 물류 가이드 / 8.2 마무리(관리자 UI+고지) / 8.4 EAS. (§7 참고)
 - **작업 원칙**: **한 번에 하나씩**, 매 작업 후 `npm run typecheck`(exit 0 유지) + 로컬 Supabase로 검증. 상세 규칙은 §6.
 
 > ⚠️ **개인 프로젝트**입니다. 팀 Obsidian vault(work-history-hub)나 팀 GitLab에 **기록하지 않습니다.** 이 저장소(GitHub `abfishlee/ridekorea_b`) 안에서만 문서화합니다.
@@ -170,7 +170,7 @@ npm run typecheck           # exit 0 유지가 규칙
 
 ## 7. 현재 진행 상황 & 다음 할 일
 
-**전체 ≈82% (27/33 작업).** 정확한 최신 상태는 항상 `vision_doc/10_development_phases.md` 참조.
+**전체 ≈85% (28/33 작업).** 정확한 최신 상태는 항상 `vision_doc/10_development_phases.md` 참조.
 
 | Phase | 내용 | 상태 |
 |---|---|---|
@@ -182,7 +182,7 @@ npm run typecheck           # exit 0 유지가 규칙
 | 5 | 지오펜싱 & 바우처 | ✅ 100% |
 | 6 | Diary & 소셜 | ✅ 100% |
 | 7 | 스탬프·물류·ETL | ◐ 33% |
-| 8 | 하드닝 & 출시 준비 | ◐ 25% |
+| 8 | 하드닝 & 출시 준비 | ◐ 50% (8.1 ✅ 다국어 · 8.2 백엔드 ✅) |
 
 **방금 완료 (Phase 5·6 화면 완성)**
 - **Wallet(5.2/5.3)** — `src/features/wallet/VoucherCard.tsx`(티켓형, RN Animated.spring 등장) + `app/(tabs)/wallet.tsx`(내 바우처 리스트·리덴·빈 상태·새로고침).
@@ -199,10 +199,12 @@ npm run typecheck           # exit 0 유지가 규칙
 - 스토어 getter 추가(`getTrackCoords/getDeviatedSegments/getPosition`), 아웃박스 웹 비치명적 처리
 
 **➡️ 다음 (우선순위)**
-1. **① 웹 미리보기 + 실지도화** — 브라우저에서 Explore·Ride·Wallet·Diary·상세를 시각 확인(오랫동안 미확인), `RideMap.web.tsx`에 인라인 웹 네이버 지도 + 브라우저 geolocation 추적. *(Docker→`supabase start`→`npm run web` 필요)*
+1. **① 웹 미리보기 + 실지도화** — 브라우저에서 Explore·Ride·Wallet·Diary·상세를 시각 확인(오랫동안 미확인) + 언어 전환 QA, `RideMap.web.tsx`에 인라인 웹 네이버 지도 + 브라우저 geolocation 추적. *(Docker→`supabase start`→`npm run web` 필요)*
 2. **7.2 물류 가이드(logistics_tips)** — 인천공항 자전거 수하물 등 가이드 보드.
-3. **8.1 다국어 완성(EN/JP/ZH/KO)** — 신규 화면(Wallet/Diary/댓글) 문자열을 i18n으로 이관.
-4. **8.2 모더레이션(reports) + 8.4 EAS 빌드**, 잔여 1.4 Edge Function 통합테스트.
+3. **8.2 마무리** — 모더레이션 백엔드(B2/C3)는 완료; 잔여 = 관리자 모더레이션 화면(`review_poi`/`resolve_report`/`admin_list_*` 연결) + 개인정보/권한 고지 문구.
+4. **8.4 EAS 빌드**, 잔여 1.4 Edge Function 통합테스트.
+
+> **✅ 방금 완료 — 8.1 다국어 완성**: 전 화면(Explore/Wallet/Diary/Ride/Route 상세/POI 상세/login)·컴포넌트(VoucherCard/GlassDashboard/RideMap/RouteMap)의 인라인 문자열을 `t()`로 이관, 4개 로케일(ko·en·ja·zh) 번들 확장(wallet/diary/route/poi/ride 네임스페이스 + 보간키). 타입체크 exit 0, 코어 70/70, 커밋 `2c58b13` push 완료.
 
 **백로그(나중 폴리시)**
 - 스팟 마커: 사진 있으면 **원형 사진 마커**, 없으면 이모지 (`route_spots_geojson`에 photo_url 추가)

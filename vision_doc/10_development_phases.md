@@ -3,7 +3,7 @@
 > 너(사용자)와 나(Claude)가 **한 작업씩** 진행하는 살아있는 트래커. 매 작업 후 상태와 진행률을 갱신한다.
 > 상태 표기: ✅ 완료 · ◐ 진행/부분 · ☐ 대기
 
-## 📊 진행률 요약 (Overall ≈ 82%)
+## 📊 진행률 요약 (Overall ≈ 85%)
 
 | Phase | 내용 | 상태 | 진행률 |
 |---|---|---|---|
@@ -15,9 +15,9 @@
 | 5 | 지오펜싱 & 바우처 | ✅ | 100% |
 | 6 | Diary & 소셜 | ✅ | 100% |
 | 7 | 스탬프·물류·ETL | ◐ | 33% |
-| 8 | 하드닝 & 출시 준비 | ◐ | 25% |
+| 8 | 하드닝 & 출시 준비 | ◐ | 50% |
 
-**완료 작업: 27 / 33** → **약 82%**
+**완료 작업: 28 / 33** → **약 85%**
 
 > 🟢 **로컬 Supabase 스택 구동·검증 완료** (Docker): 마이그레이션 2종 + seed 적용, 데이터 확인(routes 2·spots 4·vouchers 2·regions 1·인증센터 3·pois 3·profiles 1).
 > 🟢 **피드 쿼리 end-to-end 검증** (3.1): anon/authenticated GRANT 추가 + 임베드 FK 명시 후 실 데이터 조회 성공.
@@ -31,6 +31,8 @@
 > 🟢 **소셜 RPC 검증** (6.2/6.3, 피터 권한): `publish_route`→PRIVATE↔PUBLIC 전환·남의 루트(NOT_OWNER) 차단. `add_comment`→작성 시 comments_count +1(트리거)·삭제 시 복원·빈본문(INVALID_BODY) 차단 확인.
 > 🟢 **바우처 사용 RPC 검증** (5.3, 피터 권한): `redeem_voucher`→ISSUED→REDEEMED(redeemed_at 설정)·이중사용·없는 claim(NOT_REDEEMABLE) 차단. Wallet 임베드 쿼리(claims+voucher+region) REST 200 확인. ✅ **전 RPC 검증 완료**.
 > 🟢 **콜드스타트 시딩** (8.3): 개척자 라이더 3명(Yuki🇯🇵·Lena🇩🇪·Mateo🇪🇸) 공개 여행기 3개 + 스팟 9개 시드 → 피드에 **공개 USER 루트 4개(4국적)·스팟 13개**. seed.sql 편입(멱등).
+> 🟢 **다국어 완성** (8.1): 전 화면(Explore·Wallet·Diary·Ride·Route 상세·POI 상세·login) + 컴포넌트(VoucherCard·GlassDashboard·RideMap/RouteMap 폴백)의 인라인 문자열을 `t()`로 이관. 4개 로케일(ko·en·ja·zh)에 wallet/diary/route/poi/ride 네임스페이스 + 보간키(`{{km}}`·`{{mins}}`·`{{points}}`·`{{code}}`·`{{msg}}`) 확장. JSON 유효성·타입체크(exit 0)·코어 70/70 통과. 커밋 `2c58b13`.
+> 🟢 **모더레이션 백엔드 완성** (8.2 백엔드): 비교기반 고도화(B2/C3)에서 `poi_feedback`(추천/주의 upsert+트리거 카운트)·`reports` 확장(POI 타깃+status)·`set_poi_feedback`/`create_report` RPC + 관리자용 `review_poi`/`resolve_report`/`admin_list_*`(self-gated `is_admin()`) 마이그레이션 작성·ROLLBACK 검증. **잔여: 관리자 모더레이션 UI + 개인정보/권한 고지 문구.**
 
 ---
 
@@ -88,18 +90,18 @@
 - ☐ 7.2 물류 가이드 보드(logistics_tips)
 - ☐ 7.3 FastAPI 월간 ETL(파일럿 POI → pois upsert)
 
-## Phase 8 — Hardening & Launch ◐
-- ☐ 8.1 다국어 완성(EN/JP/ZH/KO)
-- ☐ 8.2 모더레이션(reports) + 개인정보/권한 고지
+## Phase 8 — Hardening & Launch ◐ (50%)
+- ✅ 8.1 다국어 완성(EN/JP/ZH/KO) — 전 화면·컴포넌트 인라인 문자열을 `t()`로 이관, 4개 로케일 번들 확장(wallet/diary/route/poi/ride + 보간키). `app/(tabs)/{index,wallet,diary,ride}.tsx`·`app/{route,poi}/[id].tsx`·`app/login.tsx`·`src/features/wallet/VoucherCard.tsx`·`src/features/ride/GlassDashboard.tsx`·`src/features/ride/RideMap.tsx`·`src/features/route/RouteMap.tsx`. 타입체크 exit 0, 코어 70/70. 커밋 `2c58b13`.
+- ◐ 8.2 모더레이션(reports) + 개인정보/권한 고지 — **백엔드 완료**(B2/C3): `poi_feedback`·`reports` 확장·`set_poi_feedback`/`create_report` + 관리자 RPC(`review_poi`/`resolve_report`/`admin_list_pending_pois`/`admin_list_open_reports`, `is_admin()` self-gated) 마이그레이션·ROLLBACK 검증. POI 상세에 추천/주의·신고 UI 연결됨. **잔여: 관리자 모더레이션 화면 + 개인정보/권한 고지 문구.**
 - ✅ 8.3 오프라인 폴리시 + 콜드스타트 시딩 — 오프라인=아웃박스(4.2 완료). **콜드스타트 시딩 완료**: `supabase/seed.sql`에 개척자 여행기 3개(Yuki/Lena/Mateo, 커버·스팟 사진 포함) 추가 → 피드 4개국 여행기.
 - ☐ 8.4 EAS 빌드 + 스토어 제출 준비
 
 ---
 
 ## 🎯 현재 포커스
-- **방금 완료**: ✅ **화면 3종 완성** — 5.2/5.3 Wallet(VoucherCard 스프링 등장 + 리덴), 6.1 Diary(내 여정 + 발행 토글), 6.3 댓글 UI(상세화면 작성/삭제). **Phase 5·6 모두 100% 도달.** 타입체크 통과(exit=0).
+- **방금 완료**: ✅ **8.1 다국어 완성** — 전 화면·컴포넌트를 i18n으로 이관(ko·en·ja·zh), 4개 로케일 번들 확장. 타입체크 exit 0, 코어 70/70. 커밋·push 완료(`2c58b13`, SYNCED). *(비교기반 고도화 B2/C3로 8.2 모더레이션 백엔드도 사실상 완료 → 잔여는 관리자 UI + 고지 문구.)*
 - **📦 너의 EAS 빌드 단계(준비되면)**: `npm i -g eas-cli` → `eas login` → `eas init`(projectId 생성) → `eas build -p android --profile development` → APK 설치 → `npx expo start --dev-client`. 지도는 기존 웹 Dynamic Map 키 그대로 사용(네이티브 SDK 키 불필요, localhost 허용만).
-- **다음 → ① 웹 미리보기**(브라우저에서 Explore·Ride·Wallet·Diary·상세 시각 확인 + `RideMap.web` 실지도화) — *Docker + Metro 기동 필요*. 이후 **7.2 물류 가이드 → 8.1 다국어 완성 → 8.2 모더레이션** 순.
+- **다음 후보**: ① **웹 미리보기**(브라우저에서 전 화면 시각 확인 + 언어 전환 QA + `RideMap.web` 실지도화) — *Docker + Metro 기동 필요* · ② **7.2 물류 가이드 보드**(`logistics_tips`) · ③ **8.2 마무리**(관리자 모더레이션 UI + 개인정보/권한 고지) · ④ **8.4 EAS 빌드**.
 - **📌 백로그(나중 폴리시)**:
   - 스팟 마커 디자인 — **사진 있으면 원형 사진 마커**(돋보기 스타일), **글만 있으면 이모지**. (`route_spots_geojson`에 photo_url 추가 + 마커 content를 원형 이미지로)
   - 지도 마커 **밀집 구간 클러스터링** — 줌아웃·밀집 시 근접 마커를 하나로 묶어 개수 배지 표시, 줌인·탭 시 해제. (네이버 지도 MarkerClustering 라이브러리 또는 자체 그리드 클러스터링)
