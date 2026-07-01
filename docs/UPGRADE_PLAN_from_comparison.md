@@ -9,7 +9,9 @@
 - ✅ **A3 완료** (2026-07-01, commit `b748e68`) — `src/map/` 신설: `MapProvider` 인터페이스 + provider-neutral 타입 + `NaverWebViewProvider`(기존 `lib/naverMap`에 위임, 단일 지도로드 과금모델 유지) + Mapbox/Google stub + `createMapProvider`팩토리/`MAP_CONFIG`. **네이티브** `RideMap`/`RouteMap`가 Naver 직접 import → `mapProvider` 의존으로 이관(동작 불변). typecheck exit 0.
   - ⚠️ 후속: 웹 변형(`RideMap.web.tsx`/`RouteMap.web.tsx`)은 아직 Naver 웹 SDK 직접 사용(인라인 DOM 지도). 이는 별도 refactor로 이관 예정.
 - ✅ **B1 완료** (2026-07-01, commit `7500919`) — `pois`에 출처/라이선스(`source_url`·`source_name`·`license_type`·`attribution`·`review_status` default 'approved'+check+idx) + 물류(`transport_mode`·`bike_policy(_en)`·`packing_required`·`packing_notes(_en)`·`booking_url`) 컴럼 추가. **기존 스키마 존중**: 기존 `source`/`source_ref`(unique)/`source_updated_at`/`meta` 그대로 → `external_id`/`retrieved_at` 중복 안 만듦. 로컬 적용+`schema_migrations` 기록, 시드 3행 approved, check 제약 동작, `gen:types` 재생성. typecheck exit 0.
-- ☐ **B2 — feedback/report 테이블 + RPC** ← 다음 (모더레이션 read 정책 `review_status='approved'`도 여기서)
+- ✅ **B2 완료** (2026-07-01, commit `3756320`) — `poi_feedback`(recommend/caution, poi+user unique, RLS 본인만 쓰기) + `pois.recommend_count`/`caution_count`를 SECURITY DEFINER 트리거로 동기화(insert/전환/delete). 기존 `reports` 확장: +`POI` enum 값, +`status`(open/resolved/dismissed)+`resolved_at`. RPC `set_poi_feedback`(upsert/clear, 최신 카운트 반환)·`create_report`(reason 필수). pois read를 `review_status='approved'`로 제한(B1 이월). Peter JWT+ROLLBACK로 해피패스/전환/멱등/4가지 가드 검증. gen:types + typecheck exit 0.
+
+🎉 **Tier A(A1·A2·A3) + Tier B(B1·B2) 전부 완료.** 다음은 Tier C(별도 스프린트) 또는 UI 연결(feedback 버튼·신고 메뉴·물류 표시)—선택 대기.
 
 ## 🌙 실행 순서
 1. **환경**: Docker Desktop을 **시작 메뉴에서 직접 실행**(에이전트로 켜면 OOM) → `npx supabase start` → `.env`에 anon key.
@@ -60,14 +62,14 @@
 
 </details>
 
-### B2. feedback/report 테이블 + RPC (8.2 모더레이션 시작)
-- **대상(신규)**: `supabase/migrations/<ts>_moderation.sql`
-  - `poi_feedback(id, poi_id, user_id, feedback_type check in('recommend','caution'), created_at, unique(poi_id,user_id))`
-  - `reports(id, target_type, target_id, user_id, report_type check in('closed','wrong_location','danger','other'), note, status default 'open', created_at, resolved_at)`
-  - RLS(작성자 본인 + 공개 읽기 정책) + `pois.recommend_count/caution_count` 카운트 트리거.
-  - RPC: `set_poi_feedback(p_poi uuid, p_type text)`, `create_report(p_target_type text, p_target uuid, p_type text, p_note text)`.
-- **검증(피터 JWT, ROLLBACK 래핑)**: 발급/토글/중복 unique/카운트 트리거/빈 note 차단.
-- **AC**: 로컬 DB 검증 통과 + 타입 재생성.
+### B2. feedback/report 테이블 + RPC (8.2 모더레이션 시작) ✅ (commit `3756320`)
+- **실제 적용**: `supabase/migrations/20260701110000_moderation.sql`. 기존 `reports` 테이블이 이미 있어(reporter_id·target_type·target_id·reason) **재생성 안 하고 확장**함.
+- **poi_feedback**: recommend/caution, `unique(poi_id,user_id)`, RLS(읽기 전체/쓰기 본인) + `poi_feedback_poi_idx`.
+- **카운트**: `pois.recommend_count`/`caution_count` 신규 + `bump_poi_feedback_counts()` SECURITY DEFINER 트리거(insert/update전환/delete 모두 처리).
+- **reports 확장**: `report_target`에 `POI` 값 추가, `status`(open/resolved/dismissed default open)+`resolved_at` 추가.
+- **RPC**: `set_poi_feedback(p_poi,p_type)` → (recommend_count,caution_count,my_feedback) 반환, null이면 해제; `create_report(p_target_type,p_target,p_reason)` → reports 행(reason 1..1000 필수).
+- **read 정책**: `pois`를 `USING (review_status='approved')`로 교체(B1 이월 완료).
+- **검증됨(Peter JWT+ROLLBACK)**: recommend(1/0)→caution 전환(0/1)→해제(0/0), POI 신고(target=POI,status=open,mine=t), 멱등 recommend(1→1 유지), INVALID_FEEDBACK_TYPE·INVALID_REASON·POI_NOT_FOUND·UNAUTHENTICATED 가드. gen:types + typecheck exit 0.
 
 ---
 
