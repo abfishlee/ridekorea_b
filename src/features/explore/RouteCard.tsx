@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import theme from "../../theme/theme";
 import { FeedRoute, formatDistance, formatDuration, flagEmoji } from "./api";
 
@@ -13,6 +14,7 @@ function Meta({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: stri
 }
 
 export function RouteCard({ route, onPress }: { route: FeedRoute; onPress?: () => void }) {
+  const { t } = useTranslation();
   const author = route.author;
   return (
     <Pressable
@@ -34,8 +36,8 @@ export function RouteCard({ route, onPress }: { route: FeedRoute; onPress?: () =
 
         <Text style={styles.author}>
           {author
-            ? `${flagEmoji(author.nationality)} ${author.display_name ?? "Rider"}`.trim()
-            : "Official route"}
+            ? `${flagEmoji(author.nationality)} ${author.display_name ?? t("route.rider")}`.trim()
+            : t("route.official")}
         </Text>
 
         <View style={styles.row}>
@@ -53,12 +55,18 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.card,
-    overflow: "hidden",
     borderWidth: 1,
     borderColor: theme.colors.border,
+    ...theme.shadows.soft,
   },
   pressed: { opacity: 0.9 },
-  cover: { width: "100%", height: 170, backgroundColor: theme.colors.bg },
+  cover: {
+    width: "100%",
+    height: 170,
+    backgroundColor: theme.colors.surfaceMuted,
+    borderTopLeftRadius: theme.radius.card,
+    borderTopRightRadius: theme.radius.card,
+  },
   coverPlaceholder: { alignItems: "center", justifyContent: "center" },
   body: { padding: theme.space.lg, gap: theme.space.xs },
   title: {
