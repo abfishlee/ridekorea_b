@@ -13,6 +13,10 @@
 
 🎉 **Tier A(A1·A2·A3) + Tier B(B1·B2) 전부 완료.** 다음은 Tier C(별도 스프린트) 또는 UI 연결(feedback 버튼·신고 메뉴·물류 표시)—선택 대기.
 
+## 🔌 UI 연결 (B1/B2 백엔드 → 화면)
+- ✅ **POI 상세 화면** (2026-07-01, commit `828920f`) — `src/features/poi/api.ts`(`usePoi`·`useMyPoiFeedback`·`useSetPoiFeedback`·`useCreateReport`) + `app/poi/[id].tsx`: 타입 배지, recommend/caution 버튼(실시간 카운트+활성상태, 탭으로 set/switch/clear), 물류 카드(transport_mode/bike_policy/packing/booking_url), 인라인 신고 컴포저(create_report POI), 출처/라이선스 푸터. expo-router 자동 라우팅(`/poi/[id]`). typecheck exit 0.
+  - ☐ 잔여: 진입점(POI 목록 화면 또는 지도 마커 탭→네비게이션). 현재는 딥링크(`/poi/<id>`)로 접근. 시드 POI id: `e0a7e754-597e-492b-adb4-535ed1e849bf`.
+
 ## 🌙 실행 순서
 1. **환경**: Docker Desktop을 **시작 메뉴에서 직접 실행**(에이전트로 켜면 OOM) → `npx supabase start` → `.env`에 anon key.
 2. Tier A(코드만, Docker 불필요) 먼저 → 각 항목 typecheck 그린 → 커밋.
