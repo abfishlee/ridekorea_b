@@ -3,7 +3,7 @@
 > 너(사용자)와 나(Claude)가 **한 작업씩** 진행하는 살아있는 트래커. 매 작업 후 상태와 진행률을 갱신한다.
 > 상태 표기: ✅ 완료 · ◐ 진행/부분 · ☐ 대기
 
-## 📊 진행률 요약 (Overall ≈ 76%)
+## 📊 진행률 요약 (Overall ≈ 79%)
 
 | Phase | 내용 | 상태 | 진행률 |
 |---|---|---|---|
@@ -11,18 +11,19 @@
 | **1** | **DB & 백엔드 코어** | ◐ | **90%** |
 | 2 | 모바일 앱 스켈레톤 | ✅ | 100% |
 | 3 | Explore & Route Detail | ✅ | 100% |
-| 4 | Ride 코어(추적·이탈·사진핀) | ◐ | 90% |
+| 4 | Ride 코어(추적·이탈·사진핀) | ✅ | 100% |
 | 5 | 지오펜싱 & 바우처 | ◐ | 67% |
 | 6 | Diary & 소셜 | ◐ | 50% |
 | 7 | 스탬프·물류·ETL | ◐ | 33% |
 | 8 | 하드닝 & 출시 준비 | ◐ | 25% |
 
-**완료 작업: 25 / 33** → **약 76%**
+**완료 작업: 26 / 33** → **약 79%**
 
 > 🟢 **로컬 Supabase 스택 구동·검증 완료** (Docker): 마이그레이션 2종 + seed 적용, 데이터 확인(routes 2·spots 4·vouchers 2·regions 1·인증센터 3·pois 3·profiles 1).
 > 🟢 **피드 쿼리 end-to-end 검증** (3.1): anon/authenticated GRANT 추가 + 임베드 FK 명시 후 실 데이터 조회 성공.
 > 🟢 **핵심 플로우 RPC 검증** (3.2, 인증 JWT): `import_route`→PRIVATE/DRAFT 복제 생성, `toggle_like`→♥ 증가(트리거 작동) 확인.
 > 🟢 **라이딩 종료 RPC 검증** (4.5, 피터 권한): 공식루트 import→`finalize_ride`(합성 track/deviated GeoJSON)→**FINISHED + track/deviated 지오메트리 저장 + 거리 4511.7m 서버계산 + 프로필 누적거리 갱신** 확인(트랜잭션 ROLLBACK으로 시드 무손).
+> 🟢 **특정 루트 라이딩 플로우 완성** (4.1): 루트 상세 → 계획 경로 전달 → 이탈 감지(파랑→분홍) → 종료 시 `finalize_ride` 저장까지 UI 연결. 구성 RPC 3종(`import_route`·`route_path_geojson`·`finalize_ride`) 개별 검증 완료. 통합 DB 재검증은 Docker 기동 시 1회 확인 예정.
 > 🟢 **사진핀 RPC 검증** (4.4, 피터 권한): `add_ride_spot`→소유 루트에 Point(SRID4326)·photo_url·spot_type 스팟 생성 확인. Storage 버킷 `ride-photos`(공개읽기+소유자 쓰기) 생성 확인.
 > 🟢 **지오펜싱/바우처 RPC 검증** (5.1, 피터 권한): `nearby_regions_geojson`→부여 근처 1건(MultiPolygon)·반경 밖 0건. `claim_voucher`→발급(ISSUED)·재고 차감·중복(ALREADY_CLAIMED)·지역밖(OUTSIDE_REGION) 차단 확인.
 > 🟢 **스탬프 RPC 검증** (7.1, 피터 권한): `certification_centers_geojson`→3곳. `award_stamp`→100m 근접 발급·재발급 멱등·150m 밖(TOO_FAR) 차단 확인. `buildPassport` 순수 8/8.
@@ -62,8 +63,10 @@
 - ✅ 3.2 Route Detail — `src/features/route/api.ts`(상세 쿼리 + `import_route`/`toggle_like` mutation), `app/route/[id].tsx`(커버·통계·요약·소셜·**여정 타임라인**·`[Make it my route]`). 카드→상세 라우팅 연결, spot_type enum 정합. **RPC 두 개 인증 컨텍스트 검증 완료**.
 - ✅ 3.3 지도 어댑터 — `route_path_geojson` RPC(경로를 GeoJSON으로, RLS 준수), `src/lib/naverMap.ts`(Web Dynamic Map HTML 빌더, 비용최소 전략), `src/features/route/RouteMap.tsx`(WebView + 키 없을 때 폴백). 상세에 루트 폴리라인 표시. 타입체크 통과 + RPC 검증(LineString 반환).
 
-## Phase 4 — Ride Core ◐
-- ◐ 4.1 네이티브 네이버 지도(Ride) + 글래스 대시보드 — **화면 완성**: `app/(tabs)/ride.tsx`(자유 라이딩 시작/일시정지/종료), `GlassDashboard.tsx`(속도·거리·시간·정상/이탈 배지), `RideMap.tsx`(WebView 라이브 지도: `buildRideMapHtml`—지도 1회 로드 후 증분 갱신으로 **재로드 없음=과금 안전**, 파란/분홍 트랙), `RideMap.web.tsx`(웹 폴백). *(네이티브 Naver SDK로의 교체는 선택적 최적화→백로그)*
+## Phase 4 — Ride Core ✅ (100%)
+- ✅ 4.1 네이티브 네이버 지도(Ride) + 글래스 대시보드 + **특정 루트 라이딩** — **화면 완성**: `app/(tabs)/ride.tsx`(자유 라이딩 + **루트 라이딩** 시작/일시정지/종료), `GlassDashboard.tsx`(속도·거리·시간·정상/이탈 배지), `RideMap.tsx`(WebView 라이브 지도: `buildRideMapHtml`—지도 1회 로드 후 증분 갱신으로 **재로드 없음=과금 안전**, 파란/분홍 트랙), `RideMap.web.tsx`(웹 폴백).
+  - **루트 라이딩 플로우(신규)**: 루트 상세 `[Ride this route]`(소유 루트) 또는 `[Make it my route]`→가져오기 후 `[Ride now]` → Ride 화면이 `?routeId=`로 계획 경로(`route_path_geojson`)를 받아 지도에 표시 + **이탈 감지(파랑→분홍) 작동**, 종료 시 `finalizeAndClear`→`finalize_ride`로 서버 저장(FINISHED). 소유자 아님/짧은 트랙 등 실패는 로컬 보존 + 안내. 타입체크 통과(exit=0).
+  - *(네이티브 Naver SDK로의 교체는 선택적 최적화→백로그)*
 - ✅ 4.2 위치 추적 + SQLite 아웃박스 + 배치 동기화 — `track.ts`(순수 누적기 11/11), `outbox.ts`(expo-sqlite 영속, 웹은 비치명적 폴백), `stores/ride.ts`(watchPositionAsync→누적기→아웃박스 + 지도용 getter). 타입체크 통과.
 - ✅ 4.3 이탈 감지(Blue→Pink, 히스테리시스) — `src/features/ride/deviation.ts` (점↔폴리라인 거리 + 진입40m/이탈25m 히스테리시스). 합성 GPS 5포인트로 전환 시퀀스 검증 완료(5/5 pass).
 - ✅ 4.4 사진핀 캡처 + 업로드 파이프라인 — **캡처 UI 완성**: `expo-image-picker`로 카메라→`queueRidePhoto`(Ride 화면 📷 버튼). 백엔드(Storage 버킷 + `add_ride_spot` + 업로드/동기화)는 이미 검증 완료. app.json 권한 플러그인 추가.
@@ -93,9 +96,9 @@
 ---
 
 ## 🎯 현재 포커스
-- **방금 완료**: ✅ ② Dev Client 준비(코드/설정) — `eas.json`(android dev client), **Ride 화면**(글래스 대시보드 + 라이브 WebView 지도 + 📷 카메라 핀), app.json 이미지피커 플러그인. 타입체크 통과. → **Phase 4 사실상 완성(90%)**.
+- **방금 완료**: ✅ **Phase 4 완성(100%)** — "특정 루트 라이딩" 플로우 연결(루트 상세 → 계획 경로 전달 → 이탈 감지 파랑→분홍 → 종료 시 `finalize_ride` 서버 저장). `app/(tabs)/ride.tsx` + `app/route/[id].tsx` 수정, 타입체크 통과(exit=0). *(구성 RPC 3종 개별 검증 완료; 통합 DB 재검증은 Docker 기동 시 1회 확인 예정)*
 - **📦 너의 EAS 빌드 단계(준비되면)**: `npm i -g eas-cli` → `eas login` → `eas init`(projectId 생성) → `eas build -p android --profile development` → APK 설치 → `npx expo start --dev-client`. 지도는 기존 웹 Dynamic Map 키 그대로 사용(네이티브 SDK 키 불필요, localhost 허용만).
-- **다음 → ① 웹 Ride 화면** (브라우저 geolocation으로 추적 테스트, RideMap.web 실지도화) + "특정 루트 라이딩"(상세→planned 전달→이탈/finalize) 연결.
+- **다음 → ① 웹 Ride 화면 미리보기**(브라우저에서 Ride 화면 시각 확인 + `RideMap.web` 실지도화) — *Docker + Metro 기동 필요*. 이후 **5.2 VoucherCard UI → 5.3 Wallet UI → 6.1 Diary(내 여정)** 순.
 - **📌 백로그(나중 폴리시)**:
   - 스팟 마커 디자인 — **사진 있으면 원형 사진 마커**(돋보기 스타일), **글만 있으면 이모지**. (`route_spots_geojson`에 photo_url 추가 + 마커 content를 원형 이미지로)
   - 지도 마커 **밀집 구간 클러스터링** — 줌아웃·밀집 시 근접 마커를 하나로 묶어 개수 배지 표시, 줌인·탭 시 해제. (네이버 지도 MarkerClustering 라이브러리 또는 자체 그리드 클러스터링)

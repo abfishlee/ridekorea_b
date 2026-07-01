@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 
 import { useRide } from "../../src/stores/ride";
+import type { LngLat } from "../../src/features/ride/deviation";
 import RideMap from "../../src/features/ride/RideMap";
 import GlassDashboard from "../../src/features/ride/GlassDashboard";
 import { queueRidePhoto } from "../../src/features/ride/photos";
+import { finalizeAndClear } from "../../src/features/ride/api";
+import { useRoutePath, useRouteDetail } from "../../src/features/route/api";
 import theme from "../../src/theme/theme";
 
 export default function Ride() {
@@ -25,6 +29,17 @@ export default function Ride() {
   const getTrackCoords = useRide((s) => s.getTrackCoords);
   const getDeviatedSegments = useRide((s) => s.getDeviatedSegments);
   const getPosition = useRide((s) => s.getPosition);
+
+  // Route-ride mode: when opened with ?routeId=..., we ride that route's planned
+  // line (deviation turns blue→pink) and finalize on the server when finished.
+  const params = useLocalSearchParams<{ routeId?: string }>();
+  const router = useRouter();
+  const routeId = typeof params.routeId === "string" ? params.routeId : undefined;
+  const { data: plannedPath } = useRoutePath(routeId ?? "");
+  const { data: routeDetail } = useRouteDetail(routeId ?? "");
+  const isRouteRide = !!routeId;
+  const planned: LngLat[] = (plannedPath as LngLat[] | undefined) ?? [];
+  const plannedReady = !isRouteRide || planned.length >= 2;
 
   // On mount, offer to resume an interrupted ride (if any was persisted).
   useEffect(() => {
@@ -57,8 +72,13 @@ export default function Ride() {
   const busy = status === "starting" || status === "finishing";
 
   async function onStart() {
-    // Free ride: no planned route → pure tracking, no deviation.
-    await start({ id: `free-${Date.now()}`, plannedLine: [], title: "Free ride" });
+    if (isRouteRide && routeId) {
+      // Ride a specific route: the planned line drives deviation; finalize on finish.
+      await start({ id: routeId, plannedLine: planned, title: routeDetail?.title });
+    } else {
+      // Free ride: no planned route → pure tracking, no deviation.
+      await start({ id: `free-${Date.now()}`, plannedLine: [], title: "Free ride" });
+    }
   }
 
   async function onPhoto() {
@@ -89,17 +109,61 @@ export default function Ride() {
     if (!result) return;
     const km = (result.stats.distanceM / 1000).toFixed(2);
     const mins = Math.round(result.stats.durationS / 60);
-    Alert.alert(
-      "Ride finished",
-      `${km} km in ${mins} min · ${result.stats.pointCount} points.`,
-      [{ text: "OK", onPress: () => discard(result.rideId) }],
-    );
+
+    // Free ride (synthetic id): nothing to finalize on the server → summarize + clear.
+    if (result.routeId.startsWith("free-")) {
+      Alert.alert(
+        "Ride finished",
+        `${km} km in ${mins} min · ${result.stats.pointCount} points.`,
+        [{ text: "OK", onPress: () => discard(result.rideId) }],
+      );
+      return;
+    }
+
+    // Route ride: post the track to finalize_ride (server verifies ownership,
+    // builds geometry, flips the route to FINISHED). Keep local rows on failure.
+    try {
+      const outcome = await finalizeAndClear(
+        {
+          rideId: result.rideId,
+          routeId: result.routeId,
+          trackGeoJSON: result.trackGeoJSON,
+          deviatedGeoJSON: result.deviatedGeoJSON,
+        },
+        discard,
+      );
+      if (outcome.finalized) {
+        Alert.alert(
+          "Ride saved! 🎉",
+          `${km} km · ${mins} min — your journey is now part of the route.`,
+          [
+            {
+              text: "View route",
+              onPress: () =>
+                router.replace({ pathname: "/route/[id]", params: { id: result.routeId } }),
+            },
+            { text: "OK" },
+          ],
+        );
+      } else {
+        Alert.alert("Ride too short", "Not enough movement to save this ride.");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const notOwner = /owner|permission|denied|not.*allow/i.test(msg);
+      Alert.alert(
+        "Couldn't save ride",
+        notOwner
+          ? "Make this route your own first, then ride it."
+          : `Saved locally and will retry.\n${msg}`,
+      );
+    }
   }
 
   return (
     <View style={styles.fill}>
       <RideMap
-        planned={[]}
+        planned={planned}
         track={getTrackCoords()}
         deviated={getDeviatedSegments()}
         position={getPosition()}
@@ -111,9 +175,13 @@ export default function Ride() {
           <GlassDashboard stats={stats} deviated={deviated} />
         ) : (
           <View style={styles.intro}>
-            <Text style={styles.introTitle}>Ready to ride</Text>
+            <Text style={styles.introTitle}>
+              {isRouteRide ? routeDetail?.title ?? "Ride this route" : "Ready to ride"}
+            </Text>
             <Text style={styles.introSub}>
-              Track your line, drop photo pins, and stay found — even offline.
+              {isRouteRide
+                ? "Follow the blue line. Wander off and it turns pink — your own path. Finish to save your journey."
+                : "Track your line, drop photo pins, and stay found — even offline."}
             </Text>
           </View>
         )}
@@ -125,12 +193,14 @@ export default function Ride() {
             <Pressable
               style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && styles.pressed]}
               onPress={onStart}
-              disabled={busy}
+              disabled={busy || !plannedReady}
             >
-              {busy ? (
+              {busy || !plannedReady ? (
                 <ActivityIndicator color={theme.colors.textOnPrimary} />
               ) : (
-                <Text style={styles.btnPrimaryText}>Start ride</Text>
+                <Text style={styles.btnPrimaryText}>
+                  {isRouteRide ? "Start riding" : "Start ride"}
+                </Text>
               )}
             </Pressable>
           )}

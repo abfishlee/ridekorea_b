@@ -24,6 +24,7 @@ import {
 } from "../../src/features/route/api";
 import { formatDistance, formatDuration, flagEmoji } from "../../src/features/explore/api";
 import { RouteMap } from "../../src/features/route/RouteMap";
+import { useAuth } from "../../src/stores/auth";
 import theme from "../../src/theme/theme";
 
 const SPOT_ICON: Record<SpotType, keyof typeof Ionicons.glyphMap> = {
@@ -42,6 +43,7 @@ export default function RouteDetailScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { data: route, isLoading, error } = useRouteDetail(id);
+  const session = useAuth((s) => s.session);
 
   const importRoute = useImportRoute();
   const toggleLike = useToggleLike(id);
@@ -51,9 +53,14 @@ export default function RouteDetailScreen() {
 
   const onImport = () => {
     importRoute.mutate(id, {
-      onSuccess: () => {
-        Alert.alert("Added to your routes", "Find it in your Diary to start the ride.", [
-          { text: "OK", onPress: () => router.back() },
+      onSuccess: (newRouteId) => {
+        Alert.alert("Added to your routes 🎉", "Ride it now, or find it later in your Diary.", [
+          { text: "Later", style: "cancel", onPress: () => router.back() },
+          {
+            text: "Ride now",
+            onPress: () =>
+              router.replace({ pathname: "/ride", params: { routeId: newRouteId } }),
+          },
         ]);
       },
       onError: (e) =>
@@ -162,13 +169,22 @@ export default function RouteDetailScreen() {
 
       {/* CTA */}
       <SafeAreaView style={styles.ctaWrap} edges={["bottom"]}>
-        <Pressable style={styles.cta} onPress={onImport} disabled={importRoute.isPending}>
-          {importRoute.isPending ? (
-            <ActivityIndicator color={theme.colors.textOnPrimary} />
-          ) : (
-            <Text style={styles.ctaText}>{t("explore.makeItMyRoute")}</Text>
-          )}
-        </Pressable>
+        {session && route.author?.id === session.user.id ? (
+          <Pressable
+            style={styles.cta}
+            onPress={() => router.push({ pathname: "/ride", params: { routeId: id } })}
+          >
+            <Text style={styles.ctaText}>Ride this route</Text>
+          </Pressable>
+        ) : (
+          <Pressable style={styles.cta} onPress={onImport} disabled={importRoute.isPending}>
+            {importRoute.isPending ? (
+              <ActivityIndicator color={theme.colors.textOnPrimary} />
+            ) : (
+              <Text style={styles.ctaText}>{t("explore.makeItMyRoute")}</Text>
+            )}
+          </Pressable>
+        )}
       </SafeAreaView>
     </View>
   );
