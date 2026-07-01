@@ -246,21 +246,23 @@ const styles = StyleSheet.create({
     padding: theme.space.lg,
   },
   intro: {
-    backgroundColor: theme.colors.scrimDark,
+    backgroundColor: theme.colors.glassLight,
     borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: theme.colors.borderGlass,
     padding: theme.space.xl,
     gap: theme.space.xs,
+    ...theme.shadows.soft,
   },
   introTitle: {
     fontSize: theme.fontSize.h2,
     fontFamily: theme.fontFamily.bold,
-    color: theme.colors.textOnGlassDark,
+    color: theme.colors.text,
   },
   introSub: {
     fontSize: theme.fontSize.body,
     fontFamily: theme.fontFamily.regular,
-    color: theme.colors.textOnGlassDark,
-    opacity: 0.9,
+    color: theme.colors.textMuted,
   },
   controls: { gap: theme.space.sm },
   error: {
@@ -280,6 +282,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: theme.space.xl,
+    ...theme.shadows.soft,
   },
   btnPrimary: { backgroundColor: theme.colors.primary },
   btnPrimaryText: {
@@ -289,9 +292,9 @@ const styles = StyleSheet.create({
   },
   btnGhost: {
     flex: 1,
-    backgroundColor: theme.colors.scrimLight,
+    backgroundColor: theme.colors.glassLight,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderGlass,
   },
   btnGhostText: {
     color: theme.colors.text,
@@ -306,7 +309,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderGlass,
+    ...theme.shadows.soft,
   },
   btnPhotoText: { fontSize: 24 },
   btnFinish: { flex: 1, backgroundColor: theme.colors.exploration },

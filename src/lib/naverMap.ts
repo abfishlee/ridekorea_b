@@ -3,6 +3,9 @@
  * Detail/Explore use the Web Dynamic Map (free tier); we draw the stored route
  * polyline + spot markers ourselves — NO paid Geocoding/Directions calls.
  *
+ * Cozy Modern tracks (vision_doc/11): planned/on-route = deep K-Indigo (#1E3A8A),
+ * deviated "my own path" = warm terracotta coral (#E17055). Warm loading canvas.
+ *
  * Auth param note: new NCP "Maps" keys use `ncpKeyId`; older AI·NAVER keys use
  * `ncpClientId`. If the map shows an auth error, switch AUTH_PARAM below.
  */
@@ -33,7 +36,7 @@ export function buildRouteMapHtml(
   coords: LngLat[],
   opts?: { strokeColor?: string; spots?: SpotMarker[] },
 ): string {
-  const stroke = opts?.strokeColor ?? "#0EA5E9";
+  const stroke = opts?.strokeColor ?? "#1E3A8A";
   const coordsJson = JSON.stringify(coords ?? []);
   const spotsJson = JSON.stringify(opts?.spots ?? []);
   const emojiJson = JSON.stringify(SPOT_EMOJI);
@@ -42,7 +45,7 @@ export function buildRouteMapHtml(
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<style>html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#E2E8F0}</style>
+<style>html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#EFEAE0}</style>
 <script src="${naverScriptSrc()}"></script>
 </head>
 <body>
@@ -90,7 +93,7 @@ export function buildRouteMapHtml(
  * Live-ride WebView page. Loads the Naver map ONCE, then accepts incremental
  * updates via `window.__rideUpdate({track, deviated, pos})` — no page/map reload,
  * so it does NOT incur a new map-load charge on every GPS fix.
- *   blue  = on-route track, pink = deviated segments, dot = current position.
+ *   navy = on-route track, coral = deviated segments, dot = current position.
  */
 export function buildRideMapHtml(planned: LngLat[] = []): string {
   const plannedJson = JSON.stringify(planned ?? []);
@@ -99,7 +102,7 @@ export function buildRideMapHtml(planned: LngLat[] = []): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<style>html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#E2E8F0}</style>
+<style>html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#EFEAE0}</style>
 <script src="${naverScriptSrc()}"></script>
 </head>
 <body>
@@ -107,7 +110,7 @@ export function buildRideMapHtml(planned: LngLat[] = []): string {
 <script>
 (function(){
   var planned = ${plannedJson};
-  var map, blue, pinks = [], posMarker, ready = false, queued = null, tries = 0;
+  var map, track, coral = [], posMarker, ready = false, queued = null, tries = 0;
   function toPath(arr){ return arr.map(function(c){ return new naver.maps.LatLng(c[1], c[0]); }); }
   function init(){
     if (!window.naver || !naver.maps) { if (tries++ < 50) return setTimeout(init, 100); return; }
@@ -117,21 +120,21 @@ export function buildRideMapHtml(planned: LngLat[] = []): string {
     });
     if (planned.length > 1) {
       new naver.maps.Polyline({ map: map, path: toPath(planned),
-        strokeColor: '#94A3B8', strokeOpacity: 0.8, strokeWeight: 4, strokeStyle: 'shortdash' });
+        strokeColor: '#C4BBAA', strokeOpacity: 0.85, strokeWeight: 4, strokeStyle: 'shortdash' });
     }
-    blue = new naver.maps.Polyline({ map: map, path: [], strokeColor: '#0EA5E9', strokeOpacity: 0.95, strokeWeight: 6 });
+    track = new naver.maps.Polyline({ map: map, path: [], strokeColor: '#1E3A8A', strokeOpacity: 0.95, strokeWeight: 6 });
     ready = true;
     if (queued) { window.__rideUpdate(queued); queued = null; }
   }
   window.__rideUpdate = function(payload){
     var data = (typeof payload === 'string') ? JSON.parse(payload) : payload;
     if (!ready) { queued = data; return; }
-    if (data.track) blue.setPath(toPath(data.track));
-    pinks.forEach(function(p){ p.setMap(null); });
-    pinks = [];
+    if (data.track) track.setPath(toPath(data.track));
+    coral.forEach(function(p){ p.setMap(null); });
+    coral = [];
     (data.deviated || []).forEach(function(seg){
-      pinks.push(new naver.maps.Polyline({ map: map, path: toPath(seg),
-        strokeColor: '#EC4899', strokeOpacity: 0.95, strokeWeight: 6 }));
+      coral.push(new naver.maps.Polyline({ map: map, path: toPath(seg),
+        strokeColor: '#E17055', strokeOpacity: 0.95, strokeWeight: 6 }));
     });
     if (data.pos) {
       var ll = new naver.maps.LatLng(data.pos[1], data.pos[0]);

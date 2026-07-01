@@ -13,7 +13,8 @@ function fmtDuration(s: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-/** Glanceable, glove-friendly ride stats over the map. White text on a dark scrim. */
+/** Glanceable, glove-friendly ride stats over the map.
+ *  Cozy Modern: soft frosted glass panel (warm off-white) with dark text. */
 export function GlassDashboard({
   stats,
   deviated,
@@ -31,10 +32,12 @@ export function GlassDashboard({
         <View
           style={[
             styles.dot,
-            { backgroundColor: deviated ? theme.colors.exploration : theme.colors.accent },
+            { backgroundColor: deviated ? theme.colors.exploration : theme.colors.primary },
           ]}
         />
-        <Text style={styles.pillText}>{deviated ? t("ride.badgeOffRoute") : t("ride.badgeOnRoute")}</Text>
+        <Text style={[styles.pillText, { color: deviated ? theme.colors.exploration : theme.colors.primary }]}>
+          {deviated ? t("ride.badgeOffRoute") : t("ride.badgeOnRoute")}
+        </Text>
       </View>
 
       <View style={styles.speedRow}>
@@ -64,11 +67,14 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.scrimDark,
+    backgroundColor: theme.colors.glassLight,
     borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: theme.colors.borderGlass,
     paddingVertical: theme.space.lg,
     paddingHorizontal: theme.space.xl,
     gap: theme.space.sm,
+    ...theme.shadows.soft,
   },
   pill: {
     alignSelf: "flex-start",
@@ -79,27 +85,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.space.md,
     borderRadius: theme.radius.pill,
   },
-  pillOn: { backgroundColor: "rgba(14,165,233,0.22)" },
-  pillOff: { backgroundColor: "rgba(236,72,153,0.24)" },
+  pillOn: { backgroundColor: "rgba(30,58,138,0.10)" },
+  pillOff: { backgroundColor: "rgba(225,112,85,0.14)" },
   dot: { width: 8, height: 8, borderRadius: 4 },
   pillText: {
     fontSize: theme.fontSize.caption,
     fontFamily: theme.fontFamily.bold,
     letterSpacing: 0.8,
-    color: theme.colors.textOnGlassDark,
   },
   speedRow: { flexDirection: "row", alignItems: "flex-end", gap: theme.space.sm },
   speed: {
     fontSize: theme.fontSize.metric,
     lineHeight: theme.fontSize.metric,
     fontFamily: theme.fontFamily.bold,
-    color: theme.colors.textOnGlassDark,
+    color: theme.colors.text,
   },
   speedUnit: {
     fontSize: theme.fontSize.label,
     fontFamily: theme.fontFamily.medium,
-    color: theme.colors.textOnGlassDark,
-    opacity: 0.85,
+    color: theme.colors.textMuted,
     marginBottom: 6,
   },
   metrics: { flexDirection: "row", alignItems: "center", marginTop: theme.space.xs },
@@ -107,16 +111,15 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: theme.fontSize.title,
     fontFamily: theme.fontFamily.semibold,
-    color: theme.colors.textOnGlassDark,
+    color: theme.colors.text,
   },
   metricLabel: {
     fontSize: 11,
     fontFamily: theme.fontFamily.medium,
     letterSpacing: 0.6,
-    color: theme.colors.textOnGlassDark,
-    opacity: 0.7,
+    color: theme.colors.textMuted,
   },
-  sep: { width: 1, alignSelf: "stretch", marginVertical: 4, backgroundColor: "rgba(255,255,255,0.18)" },
+  sep: { width: 1, alignSelf: "stretch", marginVertical: 4, backgroundColor: "rgba(15,23,42,0.10)" },
 });
 
 export default GlassDashboard;
