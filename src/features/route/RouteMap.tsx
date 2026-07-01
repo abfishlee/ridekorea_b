@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+import { useTranslation } from "react-i18next";
 import { mapProvider, type LngLat, type SpotMarker } from "../../map";
 import theme from "../../theme/theme";
 
@@ -13,6 +14,7 @@ export function RouteMap({
   spots?: SpotMarker[];
   height?: number;
 }) {
+  const { t } = useTranslation();
   const html = useMemo(
     () => mapProvider.buildStaticRouteHtml(coords, { spots }),
     [coords, spots],
@@ -22,8 +24,8 @@ export function RouteMap({
   if (!mapProvider.isConfigured) {
     return (
       <View style={[styles.fallback, { height }]}>
-        <Text style={styles.fallbackText}>Map preview needs a Naver Map client ID</Text>
-        <Text style={styles.fallbackSub}>Set EXPO_PUBLIC_NAVER_MAP_CLIENT_ID in .env</Text>
+        <Text style={styles.fallbackText}>{t("route.mapFallback")}</Text>
+        <Text style={styles.fallbackSub}>{t("route.mapFallbackSub")}</Text>
       </View>
     );
   }

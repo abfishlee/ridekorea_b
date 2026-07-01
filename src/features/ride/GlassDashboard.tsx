@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import type { RideStats } from "./track";
 import theme from "../../theme/theme";
 
@@ -22,6 +23,7 @@ export function GlassDashboard({
 }) {
   const km = (stats.distanceM / 1000).toFixed(2);
   const speed = Math.max(0, stats.lastSpeedKmh).toFixed(1);
+  const { t } = useTranslation();
 
   return (
     <View style={styles.card}>
@@ -32,20 +34,20 @@ export function GlassDashboard({
             { backgroundColor: deviated ? theme.colors.exploration : theme.colors.accent },
           ]}
         />
-        <Text style={styles.pillText}>{deviated ? "OFF ROUTE" : "ON ROUTE"}</Text>
+        <Text style={styles.pillText}>{deviated ? t("ride.badgeOffRoute") : t("ride.badgeOnRoute")}</Text>
       </View>
 
       <View style={styles.speedRow}>
         <Text style={styles.speed}>{speed}</Text>
-        <Text style={styles.speedUnit}>km/h</Text>
+        <Text style={styles.speedUnit}>{t("ride.speedUnit")}</Text>
       </View>
 
       <View style={styles.metrics}>
-        <Metric label="DISTANCE" value={`${km} km`} />
+        <Metric label={t("ride.mDistance")} value={`${km} km`} />
         <View style={styles.sep} />
-        <Metric label="TIME" value={fmtDuration(stats.durationS)} />
+        <Metric label={t("ride.mTime")} value={fmtDuration(stats.durationS)} />
         <View style={styles.sep} />
-        <Metric label="POINTS" value={String(stats.pointCount)} />
+        <Metric label={t("ride.mPoints")} value={String(stats.pointCount)} />
       </View>
     </View>
   );

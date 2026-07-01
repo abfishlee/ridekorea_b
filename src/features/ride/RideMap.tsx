@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+import { useTranslation } from "react-i18next";
 import { mapProvider, type LngLat } from "../../map";
 import theme from "../../theme/theme";
 
@@ -26,6 +27,7 @@ export function RideMap({
   version: number;
 }) {
   const ref = useRef<WebView>(null);
+  const { t } = useTranslation();
   // Build the page once; `planned` is fixed for the duration of a ride.
   const html = useRef(mapProvider.buildLiveRideHtml(planned)).current;
 
@@ -48,10 +50,8 @@ export function RideMap({
   if (!mapProvider.isConfigured) {
     return (
       <View style={styles.fallback}>
-        <Text style={styles.fallbackText}>Live map needs a Naver Map client ID</Text>
-        <Text style={styles.fallbackSub}>
-          Tracking still records — set EXPO_PUBLIC_NAVER_MAP_CLIENT_ID to see the map
-        </Text>
+        <Text style={styles.fallbackText}>{t("ride.mapFallback")}</Text>
+        <Text style={styles.fallbackSub}>{t("ride.mapFallbackSub")}</Text>
       </View>
     );
   }

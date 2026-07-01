@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import * as ImagePicker from "expo-image-picker";
 
 import { useRide } from "../../src/stores/ride";
@@ -29,6 +30,7 @@ export default function Ride() {
   const getTrackCoords = useRide((s) => s.getTrackCoords);
   const getDeviatedSegments = useRide((s) => s.getDeviatedSegments);
   const getPosition = useRide((s) => s.getPosition);
+  const { t } = useTranslation();
 
   // Route-ride mode: when opened with ?routeId=..., we ride that route's planned
   // line (deviation turns blue→pink) and finalize on the server when finished.
@@ -47,16 +49,16 @@ export default function Ride() {
     recover()
       .then((found) => {
         if (!found || cancelled) return;
-        Alert.alert("Resume ride?", "An unfinished ride was found.", [
+        Alert.alert(t("ride.resumeTitle"), t("ride.resumeBody"), [
           {
-            text: "Discard",
+            text: t("ride.discard"),
             style: "destructive",
             onPress: () => {
               const id = useRide.getState().rideId;
               if (id) discard(id);
             },
           },
-          { text: "Resume", onPress: () => resume() },
+          { text: t("ride.resume"), onPress: () => resume() },
         ]);
       })
       .catch(() => {});
@@ -77,7 +79,7 @@ export default function Ride() {
       await start({ id: routeId, plannedLine: planned, title: routeDetail?.title });
     } else {
       // Free ride: no planned route → pure tracking, no deviation.
-      await start({ id: `free-${Date.now()}`, plannedLine: [], title: "Free ride" });
+      await start({ id: `free-${Date.now()}`, plannedLine: [], title: t("ride.freeRideTitle") });
     }
   }
 
@@ -85,7 +87,7 @@ export default function Ride() {
     try {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert("Camera permission needed", "Enable camera access to drop photo pins.");
+        Alert.alert(t("ride.photoPermTitle"), t("ride.photoPermBody"));
         return;
       }
       const res = await ImagePicker.launchCameraAsync({ quality: 0.7 });
@@ -98,9 +100,9 @@ export default function Ride() {
         lat: pos ? pos[1] : null,
         spotType: "GENERAL",
       });
-      Alert.alert("Photo pinned", "Saved to this ride — it'll sync when you finish.");
+      Alert.alert(t("ride.photoPinnedTitle"), t("ride.photoPinnedBody"));
     } catch {
-      Alert.alert("Couldn't add photo", "Please try again.");
+      Alert.alert(t("ride.photoErrorTitle"), t("ride.photoErrorBody"));
     }
   }
 
@@ -113,9 +115,9 @@ export default function Ride() {
     // Free ride (synthetic id): nothing to finalize on the server → summarize + clear.
     if (result.routeId.startsWith("free-")) {
       Alert.alert(
-        "Ride finished",
-        `${km} km in ${mins} min · ${result.stats.pointCount} points.`,
-        [{ text: "OK", onPress: () => discard(result.rideId) }],
+        t("ride.finishedTitle"),
+        t("ride.finishedBody", { km, mins, points: result.stats.pointCount }),
+        [{ text: t("common.ok"), onPress: () => discard(result.rideId) }],
       );
       return;
     }
@@ -134,28 +136,26 @@ export default function Ride() {
       );
       if (outcome.finalized) {
         Alert.alert(
-          "Ride saved! 🎉",
-          `${km} km · ${mins} min — your journey is now part of the route.`,
+          t("ride.savedTitle"),
+          t("ride.savedBody", { km, mins }),
           [
             {
-              text: "View route",
+              text: t("ride.viewRoute"),
               onPress: () =>
                 router.replace({ pathname: "/route/[id]", params: { id: result.routeId } }),
             },
-            { text: "OK" },
+            { text: t("common.ok") },
           ],
         );
       } else {
-        Alert.alert("Ride too short", "Not enough movement to save this ride.");
+        Alert.alert(t("ride.tooShortTitle"), t("ride.tooShortBody"));
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       const notOwner = /owner|permission|denied|not.*allow/i.test(msg);
       Alert.alert(
-        "Couldn't save ride",
-        notOwner
-          ? "Make this route your own first, then ride it."
-          : `Saved locally and will retry.\n${msg}`,
+        t("ride.couldntSaveTitle"),
+        notOwner ? t("ride.notOwnerBody") : t("ride.retryBody", { msg }),
       );
     }
   }
@@ -176,12 +176,10 @@ export default function Ride() {
         ) : (
           <View style={styles.intro}>
             <Text style={styles.introTitle}>
-              {isRouteRide ? routeDetail?.title ?? "Ride this route" : "Ready to ride"}
+              {isRouteRide ? routeDetail?.title ?? t("ride.routeTitleFallback") : t("ride.readyTitle")}
             </Text>
             <Text style={styles.introSub}>
-              {isRouteRide
-                ? "Follow the blue line. Wander off and it turns pink — your own path. Finish to save your journey."
-                : "Track your line, drop photo pins, and stay found — even offline."}
+              {isRouteRide ? t("ride.routeSub") : t("ride.readySub")}
             </Text>
           </View>
         )}
@@ -199,7 +197,7 @@ export default function Ride() {
                 <ActivityIndicator color={theme.colors.textOnPrimary} />
               ) : (
                 <Text style={styles.btnPrimaryText}>
-                  {isRouteRide ? "Start riding" : "Start ride"}
+                  {isRouteRide ? t("ride.startRoute") : t("ride.startFree")}
                 </Text>
               )}
             </Pressable>
@@ -211,7 +209,7 @@ export default function Ride() {
                 style={({ pressed }) => [styles.btn, styles.btnGhost, pressed && styles.pressed]}
                 onPress={() => (tracking ? pause() : resume())}
               >
-                <Text style={styles.btnGhostText}>{tracking ? "Pause" : "Resume"}</Text>
+                <Text style={styles.btnGhostText}>{tracking ? t("ride.pause") : t("ride.resume")}</Text>
               </Pressable>
 
               <Pressable
@@ -226,7 +224,7 @@ export default function Ride() {
                 onPress={onFinish}
                 disabled={busy}
               >
-                <Text style={styles.btnFinishText}>Finish</Text>
+                <Text style={styles.btnFinishText}>{t("ride.finish")}</Text>
               </Pressable>
             </View>
           )}

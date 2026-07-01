@@ -69,19 +69,19 @@ export default function RouteDetailScreen() {
     addComment.mutate(body, {
       onSuccess: () => setCommentText(""),
       onError: (e) =>
-        Alert.alert("Couldn't post comment", e instanceof Error ? e.message : String(e)),
+        Alert.alert(t("route.commentError"), e instanceof Error ? e.message : String(e)),
     });
   };
 
   const onDeleteComment = (commentId: string) => {
-    Alert.alert("Delete comment?", "This can't be undone.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("route.deleteCommentTitle"), t("route.deleteCommentBody"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () =>
           deleteComment.mutate(commentId, {
-            onError: (e) => Alert.alert("Error", e instanceof Error ? e.message : String(e)),
+            onError: (e) => Alert.alert(t("common.error"), e instanceof Error ? e.message : String(e)),
           }),
       },
     ]);
@@ -90,24 +90,24 @@ export default function RouteDetailScreen() {
   const onImport = () => {
     importRoute.mutate(id, {
       onSuccess: (newRouteId) => {
-        Alert.alert("Added to your routes 🎉", "Ride it now, or find it later in your Diary.", [
-          { text: "Later", style: "cancel", onPress: () => router.back() },
+        Alert.alert(t("route.importedTitle"), t("route.importedBody"), [
+          { text: t("common.later"), style: "cancel", onPress: () => router.back() },
           {
-            text: "Ride now",
+            text: t("route.rideNow"),
             onPress: () =>
               router.replace({ pathname: "/ride", params: { routeId: newRouteId } }),
           },
         ]);
       },
       onError: (e) =>
-        Alert.alert("Couldn't import", e instanceof Error ? e.message : String(e)),
+        Alert.alert(t("route.couldntImport"), e instanceof Error ? e.message : String(e)),
     });
   };
 
   const onToggleLike = () => {
     toggleLike.mutate(undefined, {
       onSuccess: (nowLiked) => setLiked(nowLiked),
-      onError: (e) => Alert.alert("Error", e instanceof Error ? e.message : String(e)),
+      onError: (e) => Alert.alert(t("common.error"), e instanceof Error ? e.message : String(e)),
     });
   };
 
@@ -121,9 +121,9 @@ export default function RouteDetailScreen() {
   if (error || !route) {
     return (
       <SafeAreaView style={styles.fill}>
-        <Text style={styles.muted}>Couldn't load this route.</Text>
+        <Text style={styles.muted}>{t("route.loadError")}</Text>
         <Pressable onPress={() => router.back()} style={styles.backLink}>
-          <Text style={styles.backLinkText}>Go back</Text>
+          <Text style={styles.backLinkText}>{t("common.goBack")}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -145,19 +145,19 @@ export default function RouteDetailScreen() {
           <Text style={styles.title}>{route.title}</Text>
           <Text style={styles.author}>
             {route.author
-              ? `${flagEmoji(route.author.nationality)} ${route.author.display_name ?? "Rider"}`.trim()
-              : "Official route"}
+              ? `${flagEmoji(route.author.nationality)} ${route.author.display_name ?? t("route.rider")}`.trim()
+              : t("route.official")}
           </Text>
 
           {/* Stats */}
           <View style={styles.stats}>
-            <Stat icon="navigate-outline" value={formatDistance(route.distance_m)} label="distance" />
+            <Stat icon="navigate-outline" value={formatDistance(route.distance_m)} label={t("route.distance")} />
             <Stat
               icon="trending-up-outline"
-              value={route.elevation_gain_m ? `${Math.round(route.elevation_gain_m)} m` : "—"}
-              label="climb"
+              value={route.elevation_gain_m ? `${Math.round(route.elevation_gain_m)} m` : "\u2014"}
+              label={t("route.climb")}
             />
-            <Stat icon="time-outline" value={formatDuration(route.est_duration_s)} label="time" />
+            <Stat icon="time-outline" value={formatDuration(route.est_duration_s)} label={t("route.time")} />
           </View>
 
           {path && path.length > 0 ? (
@@ -187,7 +187,7 @@ export default function RouteDetailScreen() {
           {/* Journey timeline */}
           {route.spots.length > 0 ? (
             <View style={styles.timeline}>
-              <Text style={styles.sectionTitle}>Journey</Text>
+              <Text style={styles.sectionTitle}>{t("route.journey")}</Text>
               {route.spots.map((spot, i) => (
                 <TimelineRow key={spot.id} spot={spot} last={i === route.spots.length - 1} />
               ))}
@@ -197,7 +197,7 @@ export default function RouteDetailScreen() {
           {/* Comments */}
           <View style={styles.comments}>
             <Text style={styles.sectionTitle}>
-              Comments{route.comments_count ? ` (${route.comments_count})` : ""}
+              {t("route.comments")}{route.comments_count ? ` (${route.comments_count})` : ""}
             </Text>
 
             {(comments.data ?? []).map((c) => (
@@ -209,13 +209,13 @@ export default function RouteDetailScreen() {
               />
             ))}
             {comments.data && comments.data.length === 0 ? (
-              <Text style={styles.noComments}>Be the first to leave a note.</Text>
+              <Text style={styles.noComments}>{t("route.commentsEmpty")}</Text>
             ) : null}
 
             <View style={styles.commentInputRow}>
               <TextInput
                 style={styles.commentInput}
-                placeholder="Add a comment…"
+                placeholder={t("route.commentPlaceholder")}
                 placeholderTextColor={theme.colors.textMuted}
                 value={commentText}
                 onChangeText={setCommentText}
@@ -254,7 +254,7 @@ export default function RouteDetailScreen() {
             style={styles.cta}
             onPress={() => router.push({ pathname: "/ride", params: { routeId: id } })}
           >
-            <Text style={styles.ctaText}>Ride this route</Text>
+            <Text style={styles.ctaText}>{t("route.rideThisRoute")}</Text>
           </Pressable>
         ) : (
           <Pressable style={styles.cta} onPress={onImport} disabled={importRoute.isPending}>
@@ -316,6 +316,7 @@ function CommentRow({
   onDelete: () => void;
 }) {
   const flag = flagEmoji(comment.author?.nationality ?? null);
+  const { t } = useTranslation();
   return (
     <View style={styles.commentRow}>
       <View style={styles.commentAvatar}>
@@ -331,7 +332,7 @@ function CommentRow({
       <View style={styles.commentContent}>
         <View style={styles.commentHead}>
           <Text style={styles.commentAuthor} numberOfLines={1}>
-            {comment.author?.display_name ?? "Rider"}
+            {comment.author?.display_name ?? t("route.rider")}
           </Text>
           <Text style={styles.commentDate}>
             {new Date(comment.created_at).toLocaleDateString()}

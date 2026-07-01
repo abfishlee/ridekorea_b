@@ -13,17 +13,17 @@ export default function Wallet() {
 
   const onRedeem = (claimId: string) => {
     Alert.alert(
-      "Redeem this voucher?",
-      "Show the partner at checkout. Redeeming can't be undone.",
+      t("wallet.redeemTitle"),
+      t("wallet.redeemBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Redeem",
+          text: t("wallet.redeem"),
           style: "destructive",
           onPress: () =>
             redeem.mutate(claimId, {
               onError: (e) =>
-                Alert.alert("Couldn't redeem", e instanceof Error ? e.message : String(e)),
+                Alert.alert(t("wallet.redeemError"), e instanceof Error ? e.message : String(e)),
             }),
         },
       ],
@@ -34,7 +34,7 @@ export default function Wallet() {
     <SafeAreaView style={styles.fill} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.h1}>{t("tabs.wallet")}</Text>
-        <Text style={styles.sub}>Local rewards you've collected on your journeys.</Text>
+        <Text style={styles.sub}>{t("wallet.subtitle")}</Text>
       </View>
 
       {isLoading ? (
@@ -43,7 +43,7 @@ export default function Wallet() {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.muted}>Couldn't load your wallet.</Text>
+          <Text style={styles.muted}>{t("wallet.loadError")}</Text>
         </View>
       ) : (
         <FlatList
@@ -68,10 +68,8 @@ export default function Wallet() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyEmoji}>{"\ud83c\udf9f\ufe0f"}</Text>
-              <Text style={styles.emptyTitle}>No vouchers yet</Text>
-              <Text style={styles.muted}>
-                Ride into a partner region to claim local deals — they'll drop in here.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("wallet.emptyTitle")}</Text>
+              <Text style={styles.muted}>{t("wallet.emptyBody")}</Text>
             </View>
           }
         />

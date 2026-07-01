@@ -53,9 +53,9 @@ export default function Explore() {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.muted}>Couldn't load routes.</Text>
+          <Text style={styles.muted}>{t("explore.loadError")}</Text>
           <Pressable onPress={() => refetch()} style={styles.retry}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{t("common.retry")}</Text>
           </Pressable>
         </View>
       ) : (
@@ -73,7 +73,7 @@ export default function Explore() {
           ListEmptyComponent={
             <View style={styles.center}>
               <Ionicons name="compass-outline" size={40} color={theme.colors.textMuted} />
-              <Text style={styles.muted}>No routes yet.</Text>
+              <Text style={styles.muted}>{t("explore.empty")}</Text>
             </View>
           }
         />

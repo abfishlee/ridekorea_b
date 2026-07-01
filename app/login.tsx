@@ -16,7 +16,7 @@ export default function Login() {
       setBusy(true);
       await signInWithGoogle();
     } catch (e) {
-      Alert.alert("Sign-in failed", e instanceof Error ? e.message : String(e));
+      Alert.alert(t("onboarding.signInFailed"), e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }

@@ -21,9 +21,9 @@ import { formatDistance, formatDuration } from "../../src/features/explore/api";
 import theme from "../../src/theme/theme";
 
 const STATUS_LABEL: Record<JourneyStatus, string> = {
-  DRAFT: "Draft",
-  ACTIVE: "Riding",
-  FINISHED: "Finished",
+  DRAFT: "diary.statusDraft",
+  ACTIVE: "diary.statusActive",
+  FINISHED: "diary.statusFinished",
 };
 const STATUS_COLOR: Record<JourneyStatus, string> = {
   DRAFT: theme.colors.textMuted,
@@ -44,7 +44,7 @@ export default function Diary() {
       { routeId: j.id, isPublic: makePublic },
       {
         onError: (e) =>
-          Alert.alert("Couldn't update", e instanceof Error ? e.message : String(e)),
+          Alert.alert(t("diary.updateError"), e instanceof Error ? e.message : String(e)),
       },
     );
   };
@@ -53,7 +53,7 @@ export default function Diary() {
     <SafeAreaView style={styles.fill} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.h1}>{t("tabs.diary")}</Text>
-        <Text style={styles.sub}>Routes you've made your own — ride again or share.</Text>
+        <Text style={styles.sub}>{t("diary.subtitle")}</Text>
       </View>
 
       {isLoading ? (
@@ -62,7 +62,7 @@ export default function Diary() {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Text style={styles.muted}>Couldn't load your journeys.</Text>
+          <Text style={styles.muted}>{t("diary.loadError")}</Text>
         </View>
       ) : (
         <FlatList
@@ -88,12 +88,10 @@ export default function Diary() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyEmoji}>{"\ud83e\udded"}</Text>
-              <Text style={styles.emptyTitle}>No journeys yet</Text>
-              <Text style={styles.muted}>
-                Find a route in Explore, tap “Make it my route,” then ride it — it lands here.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("diary.emptyTitle")}</Text>
+              <Text style={styles.muted}>{t("diary.emptyBody")}</Text>
               <Pressable style={styles.exploreBtn} onPress={() => router.push("/(tabs)")}>
-                <Text style={styles.exploreText}>Explore routes</Text>
+                <Text style={styles.exploreText}>{t("diary.exploreRoutes")}</Text>
               </Pressable>
             </View>
           }
@@ -118,6 +116,7 @@ function JourneyCard({
 }) {
   const isPublic = journey.visibility === "PUBLIC";
   const isFinished = journey.status === "FINISHED";
+  const { t } = useTranslation();
 
   return (
     <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={onOpen}>
@@ -148,12 +147,12 @@ function JourneyCard({
 
         <View style={styles.actionRow}>
           <View style={[styles.badge, { backgroundColor: STATUS_COLOR[journey.status] }]}>
-            <Text style={styles.badgeText}>{STATUS_LABEL[journey.status]}</Text>
+            <Text style={styles.badgeText}>{t(STATUS_LABEL[journey.status])}</Text>
           </View>
 
           <Pressable style={styles.rideBtn} onPress={onRide} hitSlop={6}>
             <Ionicons name="bicycle" size={15} color={theme.colors.primary} />
-            <Text style={styles.rideText}>Ride</Text>
+            <Text style={styles.rideText}>{t("diary.ride")}</Text>
           </Pressable>
 
           {isFinished ? (
@@ -167,7 +166,7 @@ function JourneyCard({
                 <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
                 <Text style={[styles.shareText, isPublic && styles.shareTextOn]}>
-                  {isPublic ? "Shared" : "Share"}
+                  {isPublic ? t("diary.shared") : t("diary.share")}
                 </Text>
               )}
             </Pressable>

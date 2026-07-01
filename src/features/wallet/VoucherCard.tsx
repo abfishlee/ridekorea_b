@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import type { VoucherClaim } from "./api";
+import { useTranslation } from "react-i18next";
 import theme from "../../theme/theme";
 
 function formatDiscount(type: string, value: number): string {
@@ -28,9 +29,9 @@ const STATUS: Record<
   VoucherClaim["status"],
   { label: string; color: string }
 > = {
-  ISSUED: { label: "Ready", color: theme.colors.success },
-  REDEEMED: { label: "Used", color: theme.colors.textMuted },
-  EXPIRED: { label: "Expired", color: theme.colors.textMuted },
+  ISSUED: { label: "wallet.statusReady", color: theme.colors.success },
+  REDEEMED: { label: "wallet.statusUsed", color: theme.colors.textMuted },
+  EXPIRED: { label: "wallet.statusExpired", color: theme.colors.textMuted },
 };
 
 export default function VoucherCard({
@@ -45,6 +46,7 @@ export default function VoucherCard({
   redeeming?: boolean;
 }) {
   const anim = useRef(new Animated.Value(0)).current;
+  const { t } = useTranslation();
   useEffect(() => {
     Animated.spring(anim, {
       toValue: 1,
@@ -56,7 +58,7 @@ export default function VoucherCard({
   }, [anim, index]);
 
   const v = claim.voucher;
-  const title = v?.title_en || v?.title || "Voucher";
+  const title = v?.title_en || v?.title || t("wallet.voucherFallback");
   const region = v?.region?.name_en || v?.region?.name || null;
   const discount = v ? formatDiscount(v.discount_type, v.discount_value) : "\u2014";
   const isIssued = claim.status === "ISSUED";
@@ -78,7 +80,7 @@ export default function VoucherCard({
         <Text style={styles.stubValue} numberOfLines={1} adjustsFontSizeToFit>
           {discount}
         </Text>
-        <Text style={styles.stubOff}>off</Text>
+        <Text style={styles.stubOff}>{t("wallet.off")}</Text>
       </View>
 
       {/* Perforated divider */}
@@ -109,7 +111,7 @@ export default function VoucherCard({
             <View />
           )}
           <View style={[styles.badge, { backgroundColor: badge.color }]}>
-            <Text style={styles.badgeText}>{badge.label}</Text>
+            <Text style={styles.badgeText}>{t(badge.label)}</Text>
           </View>
         </View>
 
@@ -122,18 +124,18 @@ export default function VoucherCard({
             {redeeming ? (
               <ActivityIndicator color={theme.colors.textOnPrimary} size="small" />
             ) : (
-              <Text style={styles.redeemText}>Redeem</Text>
+              <Text style={styles.redeemText}>{t("wallet.redeem")}</Text>
             )}
           </Pressable>
         ) : (
           <Text style={styles.usedNote}>
             {isRedeemed
-              ? `Used${claim.redeemed_at ? ` \u00b7 ${new Date(claim.redeemed_at).toLocaleDateString()}` : ""}`
-              : "Expired"}
+              ? `${t("wallet.statusUsed")}${claim.redeemed_at ? ` \u00b7 ${new Date(claim.redeemed_at).toLocaleDateString()}` : ""}`
+              : t("wallet.statusExpired")}
           </Text>
         )}
 
-        <Text style={styles.code}>Code {claim.code}</Text>
+        <Text style={styles.code}>{t("wallet.code", { code: claim.code })}</Text>
       </View>
     </Animated.View>
   );

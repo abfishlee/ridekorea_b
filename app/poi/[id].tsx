@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import {
   usePoi,
   useMyPoiFeedback,
@@ -24,22 +25,23 @@ import {
 import { useAuth } from "../../src/stores/auth";
 import theme from "../../src/theme/theme";
 
-const POI_META: Record<PoiType, { icon: keyof typeof Ionicons.glyphMap; label: string }> = {
-  RESTAURANT: { icon: "restaurant-outline", label: "Restaurant" },
-  CAFE: { icon: "cafe-outline", label: "Cafe" },
-  REPAIR: { icon: "construct-outline", label: "Repair" },
-  BICYCLE_SHOP: { icon: "bicycle-outline", label: "Bicycle shop" },
-  LODGING: { icon: "bed-outline", label: "Lodging" },
-  CAMPSITE: { icon: "bonfire-outline", label: "Campsite" },
-  CONVENIENCE: { icon: "basket-outline", label: "Convenience" },
-  REST_AREA: { icon: "pause-circle-outline", label: "Rest area" },
-  TRANSPORT: { icon: "train-outline", label: "Transport" },
-  CERT_CENTER: { icon: "ribbon-outline", label: "Certification center" },
+const POI_ICON: Record<PoiType, keyof typeof Ionicons.glyphMap> = {
+  RESTAURANT: "restaurant-outline",
+  CAFE: "cafe-outline",
+  REPAIR: "construct-outline",
+  BICYCLE_SHOP: "bicycle-outline",
+  LODGING: "bed-outline",
+  CAMPSITE: "bonfire-outline",
+  CONVENIENCE: "basket-outline",
+  REST_AREA: "pause-circle-outline",
+  TRANSPORT: "train-outline",
+  CERT_CENTER: "ribbon-outline",
 };
 
 export default function PoiDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const userId = useAuth((s) => s.session?.user.id);
 
   const { data: poi, isLoading, error } = usePoi(id);
@@ -52,7 +54,7 @@ export default function PoiDetailScreen() {
 
   const requireAuth = (): boolean => {
     if (!userId) {
-      Alert.alert("Sign in required", "Log in to share feedback and report issues.");
+      Alert.alert(t("poi.signInTitle"), t("poi.signInBody"));
       return false;
     }
     return true;
@@ -64,7 +66,7 @@ export default function PoiDetailScreen() {
     const next: FeedbackType | null = myFeedback.data === type ? null : type;
     setFeedback.mutate(next, {
       onError: (e) =>
-        Alert.alert("Couldn't save", e instanceof Error ? e.message : String(e)),
+        Alert.alert(t("poi.saveError"), e instanceof Error ? e.message : String(e)),
     });
   };
 
@@ -77,10 +79,10 @@ export default function PoiDetailScreen() {
         onSuccess: () => {
           setReason("");
           setReporting(false);
-          Alert.alert("Report sent", "Thanks — our team will review this place.");
+          Alert.alert(t("poi.reportSentTitle"), t("poi.reportSentBody"));
         },
         onError: (e) =>
-          Alert.alert("Couldn't send report", e instanceof Error ? e.message : String(e)),
+          Alert.alert(t("poi.reportError"), e instanceof Error ? e.message : String(e)),
       },
     );
   };
@@ -95,16 +97,17 @@ export default function PoiDetailScreen() {
   if (error || !poi) {
     return (
       <SafeAreaView style={styles.fill}>
-        <Text style={styles.muted}>Couldn't load this place.</Text>
+        <Text style={styles.muted}>{t("poi.loadError")}</Text>
         <Pressable onPress={() => router.back()} style={styles.backLink}>
-          <Text style={styles.backLinkText}>Go back</Text>
+          <Text style={styles.backLinkText}>{t("common.goBack")}</Text>
         </Pressable>
       </SafeAreaView>
     );
   }
 
-  const meta = POI_META[poi.poi_type] ?? { icon: "location-outline", label: poi.poi_type };
-  const title = poi.name_en || poi.name || meta.label;
+  const icon = POI_ICON[poi.poi_type] ?? "location-outline";
+  const typeLabel = t(`poi.types.${poi.poi_type}`, { defaultValue: poi.poi_type });
+  const title = poi.name_en || poi.name || typeLabel;
   const subtitle = poi.name_en && poi.name && poi.name_en !== poi.name ? poi.name : null;
   const bikePolicy = poi.bike_policy_en || poi.bike_policy;
   const packingNotes = poi.packing_notes_en || poi.packing_notes;
@@ -121,8 +124,8 @@ export default function PoiDetailScreen() {
         <View style={styles.body}>
           {/* Header */}
           <View style={styles.badge}>
-            <Ionicons name={meta.icon} size={16} color={theme.colors.primary} />
-            <Text style={styles.badgeText}>{meta.label}</Text>
+            <Ionicons name={icon} size={16} color={theme.colors.primary} />
+            <Text style={styles.badgeText}>{typeLabel}</Text>
           </View>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -131,7 +134,7 @@ export default function PoiDetailScreen() {
           <View style={styles.feedbackRow}>
             <FeedbackButton
               icon="thumbs-up"
-              label="Recommend"
+              label={t("poi.recommend")}
               count={poi.recommend_count}
               active={myFeedback.data === "recommend"}
               activeColor={theme.colors.primary}
@@ -140,7 +143,7 @@ export default function PoiDetailScreen() {
             />
             <FeedbackButton
               icon="warning"
-              label="Caution"
+              label={t("poi.caution")}
               count={poi.caution_count}
               active={myFeedback.data === "caution"}
               activeColor={theme.colors.exploration ?? "#EC4899"}
@@ -152,22 +155,22 @@ export default function PoiDetailScreen() {
           {/* Logistics */}
           {hasLogistics ? (
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Getting there with your bike</Text>
+              <Text style={styles.sectionTitle}>{t("poi.logisticsTitle")}</Text>
               {poi.transport_mode ? (
-                <InfoRow icon="train-outline" label="Transport" value={poi.transport_mode} />
+                <InfoRow icon="train-outline" label={t("poi.transport")} value={poi.transport_mode} />
               ) : null}
               {bikePolicy ? (
-                <InfoRow icon="bicycle-outline" label="Bike policy" value={bikePolicy} />
+                <InfoRow icon="bicycle-outline" label={t("poi.bikePolicy")} value={bikePolicy} />
               ) : null}
               {poi.packing_required != null ? (
                 <InfoRow
                   icon="cube-outline"
-                  label="Bag/box required"
-                  value={poi.packing_required ? "Yes" : "No"}
+                  label={t("poi.packingRequired")}
+                  value={poi.packing_required ? t("poi.yes") : t("poi.no")}
                 />
               ) : null}
               {packingNotes ? (
-                <InfoRow icon="information-circle-outline" label="Notes" value={packingNotes} />
+                <InfoRow icon="information-circle-outline" label={t("poi.notes")} value={packingNotes} />
               ) : null}
               {poi.booking_url ? (
                 <Pressable
@@ -175,7 +178,7 @@ export default function PoiDetailScreen() {
                   onPress={() => Linking.openURL(poi.booking_url as string)}
                 >
                   <Ionicons name="open-outline" size={16} color={theme.colors.textOnPrimary} />
-                  <Text style={styles.linkBtnText}>Booking / info</Text>
+                  <Text style={styles.linkBtnText}>{t("poi.booking")}</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -184,13 +187,13 @@ export default function PoiDetailScreen() {
           {/* Report */}
           {reporting ? (
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Report an issue</Text>
+              <Text style={styles.sectionTitle}>{t("poi.reportTitle")}</Text>
               <Text style={styles.reportHint}>
-                Closed down, wrong location, unsafe? Let us know.
+                {t("poi.reportHint")}
               </Text>
               <TextInput
                 style={styles.reportInput}
-                placeholder="What's wrong with this place?"
+                placeholder={t("poi.reportPlaceholder")}
                 placeholderTextColor={theme.colors.textMuted}
                 value={reason}
                 onChangeText={setReason}
@@ -204,7 +207,7 @@ export default function PoiDetailScreen() {
                     setReason("");
                   }}
                 >
-                  <Text style={styles.reportCancelText}>Cancel</Text>
+                  <Text style={styles.reportCancelText}>{t("common.cancel")}</Text>
                 </Pressable>
                 <Pressable
                   style={[
@@ -217,7 +220,7 @@ export default function PoiDetailScreen() {
                   {createReport.isPending ? (
                     <ActivityIndicator size="small" color={theme.colors.textOnPrimary} />
                   ) : (
-                    <Text style={styles.reportSubmitText}>Send report</Text>
+                    <Text style={styles.reportSubmitText}>{t("poi.reportSend")}</Text>
                   )}
                 </Pressable>
               </View>
@@ -231,7 +234,7 @@ export default function PoiDetailScreen() {
               }}
             >
               <Ionicons name="flag-outline" size={16} color={theme.colors.textMuted} />
-              <Text style={styles.reportOpenText}>Report an issue</Text>
+              <Text style={styles.reportOpenText}>{t("poi.reportOpen")}</Text>
             </Pressable>
           )}
 
@@ -244,7 +247,7 @@ export default function PoiDetailScreen() {
               </Text>
               {poi.source_url ? (
                 <Pressable onPress={() => Linking.openURL(poi.source_url as string)}>
-                  <Text style={styles.attributionLink}>Source</Text>
+                  <Text style={styles.attributionLink}>{t("poi.source")}</Text>
                 </Pressable>
               ) : null}
             </View>
