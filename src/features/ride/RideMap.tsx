@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import { buildRideMapHtml, NAVER_CLIENT_ID, type LngLat } from "../../lib/naverMap";
+import { mapProvider, type LngLat } from "../../map";
 import theme from "../../theme/theme";
 
 /**
@@ -27,7 +27,7 @@ export function RideMap({
 }) {
   const ref = useRef<WebView>(null);
   // Build the page once; `planned` is fixed for the duration of a ride.
-  const html = useRef(buildRideMapHtml(planned)).current;
+  const html = useRef(mapProvider.buildLiveRideHtml(planned)).current;
 
   // Keep the latest snapshot so we can push on load and on each version bump.
   const latest = useRef({ track, deviated, position });
@@ -35,8 +35,9 @@ export function RideMap({
 
   function push() {
     const { track, deviated, position } = latest.current;
-    const payload = JSON.stringify({ track, deviated, pos: position });
-    ref.current?.injectJavaScript(`window.__rideUpdate(${payload}); true;`);
+    ref.current?.injectJavaScript(
+      mapProvider.liveRideUpdateScript({ track, deviated, pos: position }),
+    );
   }
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export function RideMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version]);
 
-  if (!NAVER_CLIENT_ID) {
+  if (!mapProvider.isConfigured) {
     return (
       <View style={styles.fallback}>
         <Text style={styles.fallbackText}>Live map needs a Naver Map client ID</Text>

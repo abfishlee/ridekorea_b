@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import { buildRouteMapHtml, NAVER_CLIENT_ID, LngLat, SpotMarker } from "../../lib/naverMap";
+import { mapProvider, type LngLat, type SpotMarker } from "../../map";
 import theme from "../../theme/theme";
 
 export function RouteMap({
@@ -13,10 +13,13 @@ export function RouteMap({
   spots?: SpotMarker[];
   height?: number;
 }) {
-  const html = useMemo(() => buildRouteMapHtml(coords, { spots }), [coords, spots]);
+  const html = useMemo(
+    () => mapProvider.buildStaticRouteHtml(coords, { spots }),
+    [coords, spots],
+  );
 
-  // Without a Naver key the map can't render — show a graceful placeholder.
-  if (!NAVER_CLIENT_ID) {
+  // Without a configured map key the map can't render — show a graceful placeholder.
+  if (!mapProvider.isConfigured) {
     return (
       <View style={[styles.fallback, { height }]}>
         <Text style={styles.fallbackText}>Map preview needs a Naver Map client ID</Text>
