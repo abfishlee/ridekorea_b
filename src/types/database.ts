@@ -171,12 +171,52 @@ export type Database = {
           },
         ]
       }
+      poi_feedback: {
+        Row: {
+          created_at: string
+          feedback_type: string
+          id: string
+          poi_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_type: string
+          id?: string
+          poi_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          poi_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poi_feedback_poi_id_fkey"
+            columns: ["poi_id"]
+            isOneToOne: false
+            referencedRelation: "pois"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poi_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pois: {
         Row: {
           attribution: string | null
           bike_policy: string | null
           bike_policy_en: string | null
           booking_url: string | null
+          caution_count: number
           id: string
           license_type: string | null
           location: unknown
@@ -187,6 +227,7 @@ export type Database = {
           packing_notes_en: string | null
           packing_required: boolean | null
           poi_type: Database["public"]["Enums"]["poi_type"]
+          recommend_count: number
           review_status: string
           source: string
           source_name: string | null
@@ -200,6 +241,7 @@ export type Database = {
           bike_policy?: string | null
           bike_policy_en?: string | null
           booking_url?: string | null
+          caution_count?: number
           id?: string
           license_type?: string | null
           location: unknown
@@ -210,6 +252,7 @@ export type Database = {
           packing_notes_en?: string | null
           packing_required?: boolean | null
           poi_type: Database["public"]["Enums"]["poi_type"]
+          recommend_count?: number
           review_status?: string
           source: string
           source_name?: string | null
@@ -223,6 +266,7 @@ export type Database = {
           bike_policy?: string | null
           bike_policy_en?: string | null
           booking_url?: string | null
+          caution_count?: number
           id?: string
           license_type?: string | null
           location?: unknown
@@ -233,6 +277,7 @@ export type Database = {
           packing_notes_en?: string | null
           packing_required?: boolean | null
           poi_type?: Database["public"]["Enums"]["poi_type"]
+          recommend_count?: number
           review_status?: string
           source?: string
           source_name?: string | null
@@ -297,6 +342,8 @@ export type Database = {
           id: string
           reason: string | null
           reporter_id: string | null
+          resolved_at: string | null
+          status: string
           target_id: string
           target_type: Database["public"]["Enums"]["report_target"]
         }
@@ -305,6 +352,8 @@ export type Database = {
           id?: string
           reason?: string | null
           reporter_id?: string | null
+          resolved_at?: string | null
+          status?: string
           target_id: string
           target_type: Database["public"]["Enums"]["report_target"]
         }
@@ -313,6 +362,8 @@ export type Database = {
           id?: string
           reason?: string | null
           reporter_id?: string | null
+          resolved_at?: string | null
+          status?: string
           target_id?: string
           target_type?: Database["public"]["Enums"]["report_target"]
         }
@@ -873,6 +924,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_report: {
+        Args: { p_reason: string; p_target: string; p_target_type: string }
+        Returns: {
+          created_at: string
+          id: string
+          reason: string | null
+          reporter_id: string | null
+          resolved_at: string | null
+          status: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -1137,6 +1207,14 @@ export type Database = {
       }
       route_path_geojson: { Args: { p_route: string }; Returns: string }
       route_spots_geojson: { Args: { p_route: string }; Returns: Json }
+      set_poi_feedback: {
+        Args: { p_poi: string; p_type: string }
+        Returns: {
+          caution_count: number
+          my_feedback: string
+          recommend_count: number
+        }[]
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
@@ -1743,7 +1821,7 @@ export type Database = {
         | "REST_AREA"
         | "TRANSPORT"
         | "CERT_CENTER"
-      report_target: "ROUTE" | "SPOT" | "COMMENT" | "TIP"
+      report_target: "ROUTE" | "SPOT" | "COMMENT" | "TIP" | "POI"
       route_status: "DRAFT" | "ACTIVE" | "FINISHED"
       route_type: "OFFICIAL" | "USER"
       route_visibility: "PRIVATE" | "PUBLIC"
@@ -1907,7 +1985,7 @@ export const Constants = {
         "TRANSPORT",
         "CERT_CENTER",
       ],
-      report_target: ["ROUTE", "SPOT", "COMMENT", "TIP"],
+      report_target: ["ROUTE", "SPOT", "COMMENT", "TIP", "POI"],
       route_status: ["DRAFT", "ACTIVE", "FINISHED"],
       route_type: ["OFFICIAL", "USER"],
       route_visibility: ["PRIVATE", "PUBLIC"],
