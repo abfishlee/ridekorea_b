@@ -173,37 +173,73 @@ export type Database = {
       }
       pois: {
         Row: {
+          attribution: string | null
+          bike_policy: string | null
+          bike_policy_en: string | null
+          booking_url: string | null
           id: string
+          license_type: string | null
           location: unknown
           meta: Json | null
           name: string | null
           name_en: string | null
+          packing_notes: string | null
+          packing_notes_en: string | null
+          packing_required: boolean | null
           poi_type: Database["public"]["Enums"]["poi_type"]
+          review_status: string
           source: string
+          source_name: string | null
           source_ref: string | null
           source_updated_at: string | null
+          source_url: string | null
+          transport_mode: string | null
         }
         Insert: {
+          attribution?: string | null
+          bike_policy?: string | null
+          bike_policy_en?: string | null
+          booking_url?: string | null
           id?: string
+          license_type?: string | null
           location: unknown
           meta?: Json | null
           name?: string | null
           name_en?: string | null
+          packing_notes?: string | null
+          packing_notes_en?: string | null
+          packing_required?: boolean | null
           poi_type: Database["public"]["Enums"]["poi_type"]
+          review_status?: string
           source: string
+          source_name?: string | null
           source_ref?: string | null
           source_updated_at?: string | null
+          source_url?: string | null
+          transport_mode?: string | null
         }
         Update: {
+          attribution?: string | null
+          bike_policy?: string | null
+          bike_policy_en?: string | null
+          booking_url?: string | null
           id?: string
+          license_type?: string | null
           location?: unknown
           meta?: Json | null
           name?: string | null
           name_en?: string | null
+          packing_notes?: string | null
+          packing_notes_en?: string | null
+          packing_required?: boolean | null
           poi_type?: Database["public"]["Enums"]["poi_type"]
+          review_status?: string
           source?: string
+          source_name?: string | null
           source_ref?: string | null
           source_updated_at?: string | null
+          source_url?: string | null
+          transport_mode?: string | null
         }
         Relationships: []
       }
