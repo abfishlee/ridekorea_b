@@ -3,12 +3,15 @@
     "name": "RideKorea",
     "slug": "ridekorea",
     "scheme": "ridekorea",
+    "icon": "./brand_assets/app_icon_512x512.png",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "backgroundColor": "#1E3A8A"
+      "image": "./brand_assets/naturecode_logo_transparent.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FDFBF7"
     },
     "ios": {
       "supportsTablet": true,
@@ -21,6 +24,10 @@
     },
     "android": {
       "package": "kr.oceanit.ridekorea",
+      "adaptiveIcon": {
+        "foregroundImage": "./brand_assets/app_icon_512x512.png",
+        "backgroundColor": "#FDFBF7"
+      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -29,7 +36,8 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "favicon": "./brand_assets/favicon_64x64.png"
     },
     "plugins": [
       "expo-router",

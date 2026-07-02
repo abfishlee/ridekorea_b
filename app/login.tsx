@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../src/stores/auth";
@@ -67,6 +67,15 @@ export default function Login() {
             <Text style={styles.devText}>Dev sign-in (skip Google)</Text>
           </Pressable>
         ) : null}
+
+        <View style={styles.maker}>
+          <Image
+            source={require("../brand_assets/app_icon_512x512.png")}
+            style={styles.makerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.makerText}>NATURECODE</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -138,5 +147,25 @@ const styles = StyleSheet.create({
     color: theme.colors.textOnPrimary,
     textDecorationLine: "underline",
     opacity: 0.85,
+  },
+  maker: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.space.sm,
+    marginTop: theme.space.xs,
+  },
+  makerLogo: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: theme.colors.surface,
+  },
+  makerText: {
+    fontSize: theme.fontSize.caption,
+    fontFamily: theme.fontFamily.semibold,
+    color: theme.colors.textOnPrimary,
+    opacity: 0.85,
+    letterSpacing: 2,
   },
 });
